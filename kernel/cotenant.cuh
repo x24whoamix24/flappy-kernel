@@ -14,7 +14,7 @@
 //   training/policy.cuh    the policy network and its gradient
 //   training/trainer.cuh   the learner blocks
 //   game/physics.cuh       game rules and observation
-//   game/font.cuh          5x7 digits and number formatting
+//   game/font.cuh          5x7 glyphs and number formatting
 //   game/frame.cuh         what a frame shows (birds and score)
 //   game/render.cuh        drawing a frame, layer by layer
 //   game/realtime.cuh      the 30 Hz tick of the game block

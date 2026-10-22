@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-// The 5x7 digits the frame's score is drawn with, and decimal formatting of
-// counts.
+// The 5x7 glyphs the frame's text is drawn with (the score's digits and the
+// AI bird's label), and decimal formatting of counts.
 #pragma once
 
 #include <cstdint>
@@ -10,9 +10,9 @@ namespace cotenant {
 constexpr int kGlyphW = 5, kGlyphH = 7;
 constexpr int kGlyphAdvance = kGlyphW + 1; // one blank column between glyphs
 
-// The digits 0-9 in the classic 5x7 character-ROM style of HD44780-type LCD
-// controllers. One byte per row, the leftmost pixel in bit 4.
-__constant__ uint8_t kDigits[10][kGlyphH] = {
+// The digits 0-9, then A and I, in the classic 5x7 character-ROM style of
+// HD44780-type LCD controllers. One byte per row, the leftmost pixel in bit 4.
+__constant__ uint8_t kGlyphs[12][kGlyphH] = {
     {0x0E, 0x11, 0x13, 0x15, 0x19, 0x11, 0x0E}, // 0
     {0x04, 0x0C, 0x04, 0x04, 0x04, 0x04, 0x0E}, // 1
     {0x0E, 0x11, 0x01, 0x02, 0x04, 0x08, 0x1F}, // 2
@@ -23,12 +23,18 @@ __constant__ uint8_t kDigits[10][kGlyphH] = {
     {0x1F, 0x01, 0x02, 0x04, 0x08, 0x08, 0x08}, // 7
     {0x0E, 0x11, 0x11, 0x0E, 0x11, 0x11, 0x0E}, // 8
     {0x0E, 0x11, 0x11, 0x0F, 0x01, 0x02, 0x0C}, // 9
+    {0x0E, 0x11, 0x11, 0x11, 0x1F, 0x11, 0x11}, // A
+    {0x0E, 0x04, 0x04, 0x04, 0x04, 0x04, 0x0E}, // I
 };
 
-// True if pixel (x, y) is lit by the decimal `digits` drawn with their
+__device__ __forceinline__ int glyph_index(char c) {
+  return c == 'A' ? 10 : c == 'I' ? 11 : c - '0';
+}
+
+// True if pixel (x, y) is lit by `text` (digits, A and I) drawn with its
 // top-left corner at (x0, y0), each font pixel `scale` screen pixels wide.
-__device__ __forceinline__ bool digits_hit(
-    char const *digits, int len, int x0, int y0, int scale, int x, int y) {
+__device__ __forceinline__ bool
+text_hit(char const *text, int len, int x0, int y0, int scale, int x, int y) {
   int const dx = x - x0, dy = y - y0;
   int const advance = kGlyphAdvance * scale;
   if (dx < 0 || dy < 0 || dy >= kGlyphH * scale || dx >= len * advance) {
@@ -38,7 +44,9 @@ __device__ __forceinline__ bool digits_hit(
   if (col >= kGlyphW) {
     return false;
   }
-  return (kDigits[digits[dx / advance] - '0'][row] >> (kGlyphW - 1 - col)) & 1;
+  return (kGlyphs[glyph_index(text[dx / advance])][row] >>
+          (kGlyphW - 1 - col)) &
+         1;
 }
 
 // A count as shown on screen: NaN and negatives show 0, nine digits at most.

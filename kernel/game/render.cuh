@@ -57,31 +57,73 @@ __device__ __forceinline__ uint32_t fade_to_grey(uint32_t col) {
   return rgb(grey, grey, grey);
 }
 
-// ---------------------------------------------------------------- score
+// ---------------------------------------------------------------- text
 
-// White digits with a dark outline kScoreOutline pixels wide.
-constexpr int kScoreY = 30, kScoreScale = 5, kScoreOutline = 2;
-
-__device__ __forceinline__ uint32_t score_pixel(Frame const &f, int x, int y) {
-  int const width = f.score_len * kGlyphAdvance * kScoreScale;
-  int const x0 = (kScreenW - width) / 2;
-  if (x < x0 - kScoreOutline || x >= x0 + width + kScoreOutline ||
-      y < kScoreY - kScoreOutline ||
-      y >= kScoreY + kGlyphH * kScoreScale + kScoreOutline) {
+// White text with a dark outline `outline` pixels wide, its top-left corner
+// at (x0, y0).
+__device__ __forceinline__ uint32_t outlined_text_pixel(char const *text,
+                                                        int len,
+                                                        int x0,
+                                                        int y0,
+                                                        int scale,
+                                                        int outline,
+                                                        int x,
+                                                        int y) {
+  int const width = len * kGlyphAdvance * scale;
+  if (x < x0 - outline || x >= x0 + width + outline || y < y0 - outline ||
+      y >= y0 + kGlyphH * scale + outline) {
     return kTransparent;
   }
-  if (digits_hit(f.score, f.score_len, x0, kScoreY, kScoreScale, x, y)) {
+  if (text_hit(text, len, x0, y0, scale, x, y)) {
     return kScoreText;
   }
-  for (int dy = -kScoreOutline; dy <= kScoreOutline; dy += kScoreOutline) {
-    for (int dx = -kScoreOutline; dx <= kScoreOutline; dx += kScoreOutline) {
-      if (digits_hit(
-              f.score, f.score_len, x0, kScoreY, kScoreScale, x + dx, y + dy)) {
+  for (int dy = -outline; dy <= outline; dy += outline) {
+    for (int dx = -outline; dx <= outline; dx += outline) {
+      if (text_hit(text, len, x0, y0, scale, x + dx, y + dy)) {
         return kInk;
       }
     }
   }
   return kTransparent;
+}
+
+constexpr int kScoreY = 30, kScoreScale = 5, kScoreOutline = 2;
+
+__device__ __forceinline__ uint32_t score_pixel(Frame const &f, int x, int y) {
+  int const width = f.score_len * kGlyphAdvance * kScoreScale;
+  return outlined_text_pixel(f.score,
+                             f.score_len,
+                             (kScreenW - width) / 2,
+                             kScoreY,
+                             kScoreScale,
+                             kScoreOutline,
+                             x,
+                             y);
+}
+
+// "AI" above the AI's bird while it flies, so players can tell the birds
+// apart. In constant memory: a local array indexed at run time would live in
+// local memory.
+__constant__ char kAiLabel[2] = {'A', 'I'};
+constexpr int kLabelScale = 2, kLabelOutline = 1, kLabelGap = 5;
+
+__device__ __forceinline__ uint32_t ai_label_pixel(Frame const &f,
+                                                   int x,
+                                                   int y) {
+  if (!f.show_ai || !f.ai_alive) {
+    return kTransparent;
+  }
+  // Centred over the bird; the last glyph's blank column is not counted.
+  constexpr int kWidth = 2 * kGlyphAdvance * kLabelScale - kLabelScale;
+  int const top = int(f.ai_y) - kLabelGap - kGlyphH * kLabelScale;
+  return outlined_text_pixel(kAiLabel,
+                             2,
+                             kBirdX + (kBirdW - kWidth) / 2,
+                             top,
+                             kLabelScale,
+                             kLabelOutline,
+                             x,
+                             y);
 }
 
 // ---------------------------------------------------------------- birds
@@ -163,13 +205,15 @@ __device__ uint32_t bird_pixel(
   return alive || col == kTransparent ? col : fade_to_grey(col);
 }
 
+// The main bird is drawn over the AI's: the birds share one x, and players
+// must always see their own.
 __device__ __forceinline__ uint32_t birds_pixel(Frame const &f, int x, int y) {
   uint32_t col = kTransparent;
-  if (f.show_ai) {
-    col = bird_pixel(f.ai_y, f.ai_tilt, kAiColours, f.ai_alive, x, y);
-  }
-  if (col == kTransparent && f.show_main) {
+  if (f.show_main) {
     col = bird_pixel(f.course.y, f.main_tilt, kMainColours, true, x, y);
+  }
+  if (col == kTransparent && f.show_ai) {
+    col = bird_pixel(f.ai_y, f.ai_tilt, kAiColours, f.ai_alive, x, y);
   }
   return col;
 }
@@ -306,6 +350,9 @@ __device__ __forceinline__ uint32_t scenery_pixel(long long tick,
 
 __device__ uint32_t shade(Frame const &f, int x, int y) {
   if (uint32_t const c = score_pixel(f, x, y)) {
+    return c;
+  }
+  if (uint32_t const c = ai_label_pixel(f, x, y)) {
     return c;
   }
   if (uint32_t const c = birds_pixel(f, x, y)) {

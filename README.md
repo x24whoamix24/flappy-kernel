@@ -1,7 +1,7 @@
 <h1 align="center">Flappy Kernel</h1>
 
 <p align="center">
-  <img src="docs/media/showcase.gif" alt="The game, the AI learning to play it and an LLM, running in one GPU kernel" width="800">
+  <img src="docs/media/race.gif" alt="A player (yellow) racing the AI (blue, labelled AI) through the pipes, rendered by the GPU kernel" width="288">
 </p>
 
 Flappy Kernel is an arcade game: fly a bird through the pipes and race an AI bird that is
@@ -36,6 +36,11 @@ both fail:
   runs.
 
 So the game and the trainer run inside Mirage's own launch, as extra thread blocks.
+
+<p align="center">
+  <img src="docs/media/showcase.gif" alt="The game, the AI learning to play it and an LLM decoding, side by side with the live counters of one kernel launch" width="800">
+</p>
+
 The LLM stays within ~2% of running alone, and training runs as fast as it does by
 itself ([docs/results.md](docs/results.md) has the numbers and the comparison).
 

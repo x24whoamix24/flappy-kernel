@@ -47,7 +47,10 @@ __device__ void slot_play(SlotState &s, float const *w, bool flap) {
     s.ai_alive = fly_bird(s.course, s.ai_y, s.ai_vy, ai_flap);
     s.ai_score += s.ai_alive ? passed : 0.f;
   } else {
+    // The crashed bird drops to the ground instead of hanging in the air.
     s.ai_dead_ticks++;
+    s.ai_vy = fminf(s.ai_vy + kGravity, kMaxFallSpeed);
+    s.ai_y = fminf(s.ai_y + s.ai_vy, float(kGroundY - kBirdH));
   }
   if (s.mode == kWatch && !s.ai_alive && s.ai_dead_ticks > kWatchRestartTicks) {
     slot_reset(s, kWatch);
