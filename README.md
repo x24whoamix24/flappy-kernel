@@ -2,28 +2,32 @@
 
 ![The AI flying while the same kernel decodes the LLM and trains it](docs/media/showcase.gif)
 
-Flappy Kernel is an arcade game where you race an AI, running inside one GPU launch next
-to an LLM and the AI's own training. Up to 7 people can play at once, each in their own
-race, while everyone else watches. One [Mirage](https://github.com/mirage-project/mirage)
-megakernel on one H100 runs all three:
+Flappy Kernel is an arcade game: tap to fly a bird through the gaps between pipes, next to
+an AI bird on the same course, and see who lasts longer. The AI is learning the game while
+you play, and its bird always flies the newest version. Up to 7 people can play at once,
+each on their own course against their own AI bird; anyone else who opens the page
+watches the AI fly.
+
+All of it runs inside one GPU launch, next to an LLM. One
+[Mirage](https://github.com/mirage-project/mirage) megakernel on one H100 runs three jobs
+at once:
 
 - **LLM:** Qwen3-8B answers players' questions.
 - **Training:** the AI learns the game, playing 7,936 copies of it at once.
-- **Game:** players race the AI as it trains, flying its newest policy. Every game runs
-  at 30 Hz, and each frame is drawn on the GPU.
+- **Game:** every player's game runs at 30 Hz, and each frame is drawn on the GPU.
 
 Players connect from a browser; their flaps reach the GPU at the next tick.
 
 ## The idea
 
-A GPU answering one conversation spends most of its time waiting on memory, while
-its arithmetic sits idle. That idle capacity is a resource. Flappy Kernel spends it
-where you can see it: the launch that answers your question also trains an AI and
-runs the game you play against it.
+An LLM running on a GPU and answering one request at a time spends most of its time
+waiting on memory, while the GPU's arithmetic units sit idle. That idle capacity is a
+resource. Flappy Kernel spends it where you can see it: the same kernel launch that runs
+the LLM also trains an AI and runs the game you play against it.
 
 ## How it works
 
-Decoding one request at a time is memory-bound. Running other work beside it usually
+Decoding one token at a time is memory-bound. Running other work beside it usually
 means separate processes or kernels, and with a persistent megakernel like Mirage's,
 both fail:
 
