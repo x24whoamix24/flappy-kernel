@@ -1,39 +1,128 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Composes the showcase video from one megakernel launch.
+"""Composes a video of one megakernel launch.
 
 Left: the game exactly as the kernel rendered it. Right: the block layout of the
 launch, live rates for all three workloads, and the LLM's text as it was being
-decoded at that frame (from the per-frame decode step the kernel logged).
+decoded at that frame.
+
+    python bench/compose.py <run_dir>             # a recorded launch (showcase)
+    python bench/compose.py --race <record_dir>   # a race (bench/race_record.py)
+
+A run_dir holds run.json, frames_0.csv (or video_0.csv) and game_0.mp4 from
+COTENANT_OUT; the text comes from the per-frame decode step the kernel logged.
+A record_dir holds the race's frames and the server's numbers at each frame.
 """
 import argparse
 import csv
+import glob
 import json
 import os
+import re
 import subprocess
 import textwrap
 
 from PIL import Image, ImageDraw, ImageFont
-from transformers import AutoTokenizer
 
 W, H = 1280, 720
 GW, GH = 288, 512
 SCALE = H / GH
 LEFT = int(GW * SCALE)
+X0 = LEFT + 28
 STEPS_PER_LEARNER_UPDATE = 256 * 16  # environments per learner x rollout length
 FONT_DIR = "/usr/share/fonts/truetype/dejavu"  # DejaVu, overridable with --fonts
 FONT = "DejaVuSans.ttf"
 BOLD = "DejaVuSans-Bold.ttf"
 MONO = "DejaVuSansMono.ttf"
+WRAP = 92  # characters per line of LLM output
 
 BG = (16, 18, 24)
 FG = (232, 234, 240)
 DIM = (140, 146, 160)
+PROMPT = (246, 201, 69)
 ROLE = {
     "llm": (86, 156, 255),
     "sched": (120, 124, 136),
     "train": (255, 150, 60),
     "game": (120, 210, 90),
 }
+
+
+def load_fonts(directory):
+    def font(name, size):
+        return ImageFont.truetype(os.path.join(directory, name), size)
+
+    return {"title": font(BOLD, 30), "sub": font(FONT, 17), "head": font(BOLD, 18),
+            "stat": font(BOLD, 26), "lab": font(FONT, 14), "mono": font(MONO, 15)}
+
+
+def wrap(text):
+    lines = []
+    for para in text.split("\n"):
+        lines.extend(textwrap.wrap(para, WRAP) or [""])
+    return lines
+
+
+def draw(game, a, f, cols, header, lines, prompt=None):
+    """One output frame: `game` (GW x GH) on the left; on the right the block
+    map, `cols` of (heading, colour, [(value, label)]), and the LLM's text
+    under `header`, its question first if given."""
+    img = Image.new("RGB", (W, H), BG)
+    img.paste(game.resize((LEFT, H), Image.NEAREST), (0, 0))
+    d = ImageDraw.Draw(img)
+    d.text((X0, 18), "One CUDA kernel. One H100.", font=f["title"], fill=FG)
+    d.text((X0, 58), "Mirage MPK megakernel running LLM inference, RL training and a game at the same time",
+           font=f["sub"], fill=DIM)
+
+    # Block map: one cell per thread block of the single launch.
+    roles = (["llm"] * a.workers + ["sched"] * a.sched_blocks +
+             ["game"] + ["train"] * (a.cotenant - 1))
+    y = 96
+    cell, gap, per_row = 10, 2, 66
+    for b, role in enumerate(roles):
+        cx = X0 + (b % per_row) * (cell + gap)
+        cy = y + (b // per_row) * (cell + gap)
+        d.rectangle([cx, cy, cx + cell, cy + cell], fill=ROLE[role])
+    y += 2 * (cell + gap) + 8
+    legend = [("llm", f"{a.workers} LLM decode workers"), ("sched", f"{a.sched_blocks} schedulers"),
+              ("train", f"{a.cotenant - 1} RL trainers"), ("game", "1 game + renderer")]
+    lx = X0
+    for role, label in legend:
+        d.rectangle([lx, y + 3, lx + 10, y + 13], fill=ROLE[role])
+        d.text((lx + 16, y), label, font=f["lab"], fill=FG)
+        lx += 26 + int(d.textlength(label, font=f["lab"])) + 14
+
+    # Live stats for each workload.
+    y += 34
+    cw = (W - X0 - 20) // 3
+    for c, (head, color, stats) in enumerate(cols):
+        cx = X0 + c * cw
+        d.rectangle([cx, y, cx + 4, y + 172], fill=color)
+        d.text((cx + 14, y), head, font=f["head"], fill=color)
+        for k, (val, lab) in enumerate(stats):
+            sy = y + 30 + k * 48
+            d.text((cx + 14, sy), val, font=f["stat"], fill=FG)
+            d.text((cx + 14, sy + 30), lab, font=f["lab"], fill=DIM)
+    y += 190
+
+    # The LLM's output so far, its newest lines.
+    d.text((X0, y), header, font=f["head"], fill=ROLE["llm"])
+    y += 30
+    if prompt:
+        for line in wrap("> " + prompt):
+            d.text((X0, y), line, font=f["mono"], fill=PROMPT)
+            y += 19
+        y += 8
+    max_lines = (H - y - 14) // 19
+    for k, line in enumerate(lines[-max_lines:]):
+        d.text((X0, y + k * 19), line, font=f["mono"], fill=FG)
+    return img
+
+
+def encode(out):
+    return subprocess.Popen(["ffmpeg", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
+                             "-s", f"{W}x{H}", "-r", "30", "-i", "-", "-c:v", "libx264", "-preset", "medium",
+                             "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out],
+                            stdin=subprocess.PIPE)
 
 
 def rate(rows, i, key, window_ns=1_000_000_000):
@@ -44,78 +133,26 @@ def rate(rows, i, key, window_ns=1_000_000_000):
     return (rows[i][key] - rows[j][key]) / dt if dt > 0 else 0.0
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("run_dir")
-    ap.add_argument("--model", default="Qwen/Qwen3-8B")
-    ap.add_argument("--workers", type=int, default=96)
-    ap.add_argument("--sched-blocks", type=int, default=4)
-    ap.add_argument("--cotenant", type=int, default=32)
-    ap.add_argument("--out", default=None)
-    ap.add_argument("--fonts", default=FONT_DIR, help="directory with the DejaVu TTF fonts")
-    a = ap.parse_args()
+def compose_run(a, f):
+    from transformers import AutoTokenizer
 
-    run = json.load(open(f"{a.run_dir}/run.json"))
+    run = json.load(open(f"{a.source}/run.json"))
     tok = AutoTokenizer.from_pretrained(a.model)
-    plen = run["prompt_length"]
-    ids = run["token_ids"]
-    rows = []
-    log = f"{a.run_dir}/video_0.csv" if os.path.exists(f"{a.run_dir}/video_0.csv") else f"{a.run_dir}/frames_0.csv"
-    for r in csv.DictReader(open(log)):
-        rows.append({k: float(v) for k, v in r.items()})
-
-    f_title = ImageFont.truetype(os.path.join(a.fonts, BOLD), 30)
-    f_sub = ImageFont.truetype(os.path.join(a.fonts, FONT), 17)
-    f_head = ImageFont.truetype(os.path.join(a.fonts, BOLD), 18)
-    f_stat = ImageFont.truetype(os.path.join(a.fonts, BOLD), 26)
-    f_lab = ImageFont.truetype(os.path.join(a.fonts, FONT), 14)
-    f_mono = ImageFont.truetype(os.path.join(a.fonts, MONO), 15)
-
+    plen, ids = run["prompt_length"], run["token_ids"]
+    log = f"{a.source}/video_0.csv" if os.path.exists(f"{a.source}/video_0.csv") else f"{a.source}/frames_0.csv"
+    rows = [{k: float(v) for k, v in r.items()} for r in csv.DictReader(open(log))]
     steps_per_update = (a.cotenant - 1) * STEPS_PER_LEARNER_UPDATE
-    roles = (["llm"] * a.workers + ["sched"] * a.sched_blocks +
-             ["game"] + ["train"] * (a.cotenant - 1))
 
-    dec = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-i", f"{a.run_dir}/game_0.mp4",
+    dec = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-i", f"{a.source}/game_0.mp4",
                             "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE)
-    out = a.out or f"{a.run_dir}/showcase.mp4"
-    enc = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
-                            "-s", f"{W}x{H}", "-r", "30", "-i", "-", "-c:v", "libx264", "-preset", "medium",
-                            "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out],
-                           stdin=subprocess.PIPE)
-    x0 = LEFT + 28
+    out = a.out or f"{a.source}/showcase.mp4"
+    enc = encode(out)
     text_cache = (-1, [])
     written = 0
     for i, r in enumerate(rows):
         raw = dec.stdout.read(GW * GH * 3)
         if len(raw) < GW * GH * 3:
             break
-        img = Image.new("RGB", (W, H), BG)
-        game = Image.frombytes("RGB", (GW, GH), raw).resize((LEFT, H), Image.NEAREST)
-        img.paste(game, (0, 0))
-        d = ImageDraw.Draw(img)
-        d.text((x0, 18), "One CUDA kernel. One H100.", font=f_title, fill=FG)
-        d.text((x0, 58), "Mirage MPK megakernel running LLM inference, RL training and a game at the same time",
-               font=f_sub, fill=DIM)
-
-        # Block map: one cell per thread block of the single launch.
-        y = 96
-        cell, gap, per_row = 12, 2, 66
-        for b, role in enumerate(roles):
-            cx = x0 + (b % per_row) * (cell + gap)
-            cy = y + (b // per_row) * (cell + gap)
-            d.rectangle([cx, cy, cx + cell, cy + cell], fill=ROLE[role])
-        y += 2 * (cell + gap) + 8
-        legend = [("llm", f"{a.workers} LLM decode workers"), ("sched", f"{a.sched_blocks} schedulers"),
-                  ("train", f"{a.cotenant - 1} RL trainers"), ("game", "1 game + renderer")]
-        lx = x0
-        for role, label in legend:
-            d.rectangle([lx, y + 3, lx + 10, y + 13], fill=ROLE[role])
-            d.text((lx + 16, y), label, font=f_lab, fill=FG)
-            lx += 26 + int(d.textlength(label, font=f_lab)) + 14
-
-        # Live stats for each workload.
-        y += 34
-        t = r["host_ns"] / 1e9
         cols = [
             ("INFERENCE  Qwen3-8B", ROLE["llm"], [
                 (f"{rate(rows, i, 'decode_step'):.0f}", "tokens / s"),
@@ -132,37 +169,79 @@ def main():
                 (f"{int(r['game_best'])}", "best"),
             ]),
         ]
-        cw = (W - x0 - 20) // 3
-        for c, (head, color, stats) in enumerate(cols):
-            cx = x0 + c * cw
-            d.rectangle([cx, y, cx + 4, y + 172], fill=color)
-            d.text((cx + 14, y), head, font=f_head, fill=color)
-            for k, (val, lab) in enumerate(stats):
-                sy = y + 30 + k * 48
-                d.text((cx + 14, sy), val, font=f_stat, fill=FG)
-                d.text((cx + 14, sy + 30), lab, font=f_lab, fill=DIM)
-        y += 190
-
-        # LLM output as of this frame.
-        d.text((x0, y), f"LLM output (decoded inside the same kernel)   t = {t:5.1f} s", font=f_head, fill=ROLE["llm"])
-        y += 30
         step = int(r["decode_step"])
         if step != text_cache[0]:
             text = tok.decode(ids[plen:min(len(ids), step + 1)], skip_special_tokens=True)
-            lines = []
-            for para in text.split("\n"):
-                lines.extend(textwrap.wrap(para, 92) or [""])
-            text_cache = (step, lines)
-        lines = text_cache[1]
-        max_lines = (H - y - 14) // 19
-        for k, line in enumerate(lines[-max_lines:]):
-            d.text((x0, y + k * 19), line, font=f_mono, fill=FG)
+            text_cache = (step, wrap(text))
+        header = f"LLM output (decoded inside the same kernel)   t = {r['host_ns'] / 1e9:5.1f} s"
+        img = draw(Image.frombytes("RGB", (GW, GH), raw), a, f, cols, header, text_cache[1])
         enc.stdin.write(img.tobytes())
         written += 1
     enc.stdin.close()
     enc.wait()
     dec.kill()
     print(f"wrote {out} ({written} frames)")
+
+
+def compose_race(a, f):
+    frames = sorted(glob.glob(f"{a.source}/f*.jpg"))
+    states = [json.loads(line) for line in open(f"{a.source}/states.jsonl")]
+    steps_per_update = (a.cotenant - 1) * STEPS_PER_LEARNER_UPDATE
+    out = a.out or f"{a.source}/race.mp4"
+    enc = encode(out)
+    times = [s["t"] for s in states]
+    shown = {}  # the newest answer: the server stops reporting it once finished
+    for i, (path, s) in enumerate(zip(frames, states)):
+        stats, me = s.get("stats", {}), s.get("me", {})
+        if (s.get("llm") or {}).get("prompt"):
+            shown = s["llm"]
+        elif s.get("answer") and s["answer"].get("prompt") == shown.get("prompt"):
+            shown = {**shown, "text": s["answer"]["text"]}
+        llm = shown
+        # Frames per second over the last second of recording.
+        j = i
+        while j > 0 and times[i] - times[j - 1] <= 1.0:
+            j -= 1
+        fps = (i - j) / (times[i] - times[j]) if times[i] > times[j] else 0.0
+        cols = [
+            ("INFERENCE  Qwen3-8B", ROLE["llm"], [
+                (f"{stats.get('tok_s', 0):.0f}", "tokens / s"),
+                (f"{llm.get('tokens', 0)}", "tokens generated"),
+            ]),
+            ("TRAINING  A2C policy", ROLE["train"], [
+                (f"{stats.get('upd_s', 0):.0f}", "training steps / s"),
+                (f"{stats.get('upd_s', 0) * steps_per_update / 1e6:.0f}M", "game steps simulated / s"),
+                (f"{s.get('train_mean', 0):.0f}", "pipes per practice game"),
+            ]),
+            ("GAME  Flappy Kernel", ROLE["game"], [
+                (f"{fps:.0f}", "frames / s"),
+                (f"{me.get('you_score', 0)}", "score"),
+                (f"{max(stats.get('best_human', 0), me.get('you_score', 0))}", "best"),
+            ]),
+        ]
+        # Markdown emphasis markers read as noise in plain text.
+        text = re.sub(r"\*\*|__", "", llm.get("text", ""))
+        header = f"LLM output (decoded inside the same kernel)   t = {s['t']:5.1f} s"
+        img = draw(Image.open(path).convert("RGB"), a, f, cols, header, wrap(text), llm.get("prompt"))
+        enc.stdin.write(img.tobytes())
+    enc.stdin.close()
+    enc.wait()
+    print(f"wrote {out} ({min(len(frames), len(states))} frames)")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("source", help="a launch's run_dir, or with --race a race_record.py directory")
+    ap.add_argument("--race", action="store_true")
+    ap.add_argument("--model", default="Qwen/Qwen3-8B")
+    ap.add_argument("--workers", type=int, default=96)
+    ap.add_argument("--sched-blocks", type=int, default=4)
+    ap.add_argument("--cotenant", type=int, default=32)
+    ap.add_argument("--out", default=None)
+    ap.add_argument("--fonts", default=FONT_DIR, help="directory with the DejaVu TTF fonts")
+    a = ap.parse_args()
+    f = load_fonts(a.fonts)
+    (compose_race if a.race else compose_run)(a, f)
 
 
 if __name__ == "__main__":

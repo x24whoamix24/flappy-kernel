@@ -22,9 +22,11 @@ position), `train.csv` and `game.log` (separate trainer and game processes).
 | 112 workers: invalid TMA descriptor without co-tenants | `sweep_llm_w112/` (failed run, kept as evidence) |
 | Single launch, nothing overlapping it | `nsys/gpu_trace_summary.csv`: one kernel or copy group per row, with how many of its launches overlap `persistent_kernel` (all 0) |
 
-`video_2026-10-22/` produced the current `docs/media/showcase.gif` (with
-`bench/compose.py`; `showcase/`: single-kernel megakernel, 11.35 ms/token) and `comparison.mp4` (`cmp_*/` and
-`compare.json`), recorded with the score-only game frames; its numbers match the
+`docs/media/race.gif` is a race recorded next to a running arcade with
+`bench/race_record.py` and laid out by `bench/compose.py --race`.
+`video_2026-10-22/` holds a showcase recording (`showcase/`: single-kernel
+megakernel, 11.35 ms/token; `bench/compose.py` lays it out) and the runs behind
+`docs/media/comparison.mp4` (`cmp_*/` and `compare.json`); its numbers match the
 tables above within run-to-run noise.
 
 No raw data here: the short-context stock MPK row (7.53) and "co-tenants alone" (377
