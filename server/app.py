@@ -169,8 +169,10 @@ class Arcade:
 
     def join(self, client, mode):
         if client.slot is None:
-            if any(c.ip == client.ip and c.slot for c in self.clients):
-                return None  # one game per address
+            # One game per address: it moves to the address's newest page.
+            for other in [c for c in self.clients if c.ip == client.ip and c.slot]:
+                self.leave(other)
+                self.push(other, "notice", json.dumps({"t": "joined", "slot": None, "moved": True}))
             free = [i for i in range(1, self.sh.slots) if i not in self.owner]
             if not free:
                 # Every slot is taken: the one longest without a flap goes to

@@ -66,14 +66,7 @@ await a.click("#play-race");
 await a.waitForFunction(() => document.getElementById("result").textContent.includes("Flap to start"), null, { timeout: 10000 });
 check("player gets a GPU game slot", /slot \d/.test(await text(a, "#me")), await text(a, "#me"));
 
-// 3. A second page from the same address asks for a game. The server allows one
-// game per address (every page of this test shares one), so it keeps watching.
-const b = await open();
-await b.click("#play-solo");
-await b.waitForFunction(() => /already have one open/.test(document.getElementById("result").textContent), null, { timeout: 10000 });
-check("one game per address: a second page keeps watching", !/slot \d/.test(await text(b, "#me")), await text(b, "#result"));
-
-// 4. Player one flaps; the GPU game reacts and the race ends with a result.
+// 3. Player one flaps; the GPU game reacts and the race ends with a result.
 await a.locator("canvas").focus();
 const t0 = Date.now();
 let sawPlaying = false;
@@ -88,6 +81,16 @@ await a.locator("canvas").screenshot({ path: shots + "2-race.png" });
 const res = await text(a, "#result");
 check("flaps reach the GPU game", sawPlaying);
 check("race ends with a result", /beat the AI|outlasted you/.test(res), res);
+
+// 4. A second page from the same address asks for a game. The server allows one
+// game per address (every page of this test shares one): the game moves to the
+// new page, and the first one goes back to watching.
+const b = await open();
+await b.click("#play-solo");
+await b.waitForFunction(() => document.getElementById("result").textContent.includes("Flap to start"), null, { timeout: 10000 });
+await a.waitForFunction(() => /moved to another tab/.test(document.getElementById("result").textContent), null, { timeout: 10000 });
+check("one game per address: it moves to the newest page",
+      /slot \d/.test(await text(b, "#me")) && !/slot \d/.test(await text(a, "#me")), await text(a, "#result"));
 await b.locator("canvas").screenshot({ path: shots + "3-second-page.png" });
 
 // 5. Optional: ask the LLM (needs the Mirage megakernel, not the standalone kernel).

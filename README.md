@@ -140,7 +140,7 @@ Game, network and training constants are compile-time values in `kernel/core/con
 | Trainer gradients match PyTorch autograd (8.8e-7 max relative error) | `pip install -r reference/requirements.txt && make -C kernel && python reference/check_grad.py kernel/standalone /tmp/grad` |
 | Co-located LLM output is bit-identical to the LLM alone | token dumps: `results/showcase/` vs `results/long_single96/` |
 | Single-kernel mode: one kernel launch, no other GPU work overlapping it | Nsight Systems trace summary, `results/nsys/` |
-| Live arcade end to end: frames, input, a race to the end, one game per address, training, LLM answers | `tests/e2e.test.mjs` |
+| Live arcade end to end: frames, input, a race to the end, one game per address (it moves to the newest page), training, LLM answers | `tests/e2e.test.mjs` |
 
 ## Limits
 

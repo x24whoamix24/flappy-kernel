@@ -332,7 +332,9 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
       else if (m.t === "joined") {
         joining = false;
         if (m.slot === null && current !== "watch") {
-          setResult(m.idle ? "Another player took your seat after 30 s without a flap." : "All game slots are taken, or you already have one open. Watching for now.", "");
+          setResult(m.moved ? "Your game moved to another tab." :
+                    m.idle ? "Another player took your seat after 30 s without a flap." :
+                    "All game slots are taken. Watching for now.", "");
           setMode("watch");
         }
       } else if (m.t === "prompt") {
