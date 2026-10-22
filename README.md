@@ -78,7 +78,7 @@ behind it.
 ### Run it with Docker
 
 ```bash
-docker build -t flappy-kernel .          # builds Mirage with the patch and kernel/
+docker build -t flappy-kernel .          # Mirage with the patch, and kernel/
 docker run --gpus all --shm-size 16g -p 8080:8080 \
   -v hf-cache:/root/.cache/huggingface flappy-kernel
 ```
@@ -106,9 +106,15 @@ kubectl port-forward pod/<pod> 8080:8080         # open http://localhost:8080
 ```
 
 On a Linux machine with an H100 and CUDA 12.8 but no Kubernetes, run `deploy/install.sh` as
-root (it installs packages, then builds Mirage and `kernel/`), then `deploy/serve.sh`. It
-expects a Python environment with PyTorch 2.8 for CUDA 12.8 where `python` and `pip` work:
-the `pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` image, a venv or a conda env.
+root (it installs packages, Mirage and `kernel/`), then `deploy/serve.sh`. It expects a
+Python environment with PyTorch 2.8 for CUDA 12.8 where `python` and `pip` work: the
+`pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` image, a venv or a conda env.
+
+All three routes run `deploy/install.sh`. With Python 3.11 on x86-64 (as in that image) it
+downloads a prebuilt, patched Mirage from the
+[latest release](https://github.com/x24whoamix24/flappy-kernel/releases/latest) and takes
+about a minute; otherwise, or with `MIRAGE_PREBUILT=0`, it builds Mirage from source (about
+5 minutes on 64 cores).
 
 The end-to-end test drives real Chrome against the running arcade (Node 18 or newer;
 `npx playwright install chrome` once):

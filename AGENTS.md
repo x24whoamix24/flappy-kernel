@@ -14,7 +14,7 @@ Guidance for coding agents (and people) changing this repository. Read
 | `kernel/game/` | Physics, frame state, renderer, 30 Hz loop, showcase, arcade | the frames players see |
 | `kernel/host/` | Host setup, shared memory, CUDA IPC, recording | Mirage's host code, `kernel/tools/` |
 | `kernel/tools/` | `standalone` and `separate`: the co-tenants without the LLM | tests, benchmarks, `deploy/serve.sh` (`standalone layout`) |
-| `mirage/megakernel.patch` | Changes to Mirage @ `ca58a02` | applied by the Dockerfile and `deploy/install.sh` (which `deploy/setup_pod.sh` runs in a pod) |
+| `mirage/megakernel.patch` | Changes to Mirage @ `ca58a02` | `deploy/install.sh` (run by the Dockerfile and `deploy/setup_pod.sh`): applies it, or downloads Mirage prebuilt with it from the latest release |
 | `server/` | Web server (`app.py`) and page (`static/index.html`) | players |
 | `reference/` | PyTorch version of the game, network and gradient | the gradient check |
 | `bench/`, `results/` | Benchmarks and the raw results behind `docs/results.md` | docs |
@@ -92,6 +92,11 @@ With an H100:
   block must reach the same decision (it is published once, atomically).
 - **The idle online scheduler waits, it does not spin.** Spinning on an empty
   request ring slowed training by about 5%.
+- **A changed patch needs a new prebuilt Mirage.** `deploy/install.sh` names the
+  release archive after the patch's hash, so after a patch change installs build from
+  source until a release carries the new archive. Make it with
+  `deploy/install.sh --package <dir>` in the `pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel`
+  image and attach both files to the release.
 - **`kLlmMaxTokens` must be at least Mirage's maximum sequence length**
   (`MAX_SEQ`); a `static_assert` checks it when Mirage compiles the kernel.
 

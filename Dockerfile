@@ -10,39 +10,18 @@
 # the mounted cache, then compiles the megakernel (2-3 minutes).
 FROM pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel
 
-ARG MIRAGE_REPO=https://github.com/mirage-project/mirage.git
-ARG MIRAGE_COMMIT=ca58a02d110a278bffaed503be5e66494db2597d
-ARG CUDA_ARCH=sm_90a
-ARG MAX_JOBS=32
-
 ENV DEBIAN_FRONTEND=noninteractive \
-    PIP_NO_CACHE_DIR=1 \
-    PATH=/root/.cargo/bin:$PATH
+    PIP_NO_CACHE_DIR=1
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends git build-essential curl ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-
-# Mirage's build compiles two Rust crates.
-RUN curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-
-# Mirage at the pinned commit, patched. Its CUDA libraries build for sm_75..sm_90 and
-# need no GPU at build time; the megakernel itself is compiled when the server starts.
-RUN git clone --recursive "$MIRAGE_REPO" /opt/mirage \
- && cd /opt/mirage \
- && git checkout -q "$MIRAGE_COMMIT" \
- && git submodule update -q --init --recursive
-COPY mirage/megakernel.patch /opt/flappy-kernel/mirage/megakernel.patch
-RUN cd /opt/mirage \
- && git apply /opt/flappy-kernel/mirage/megakernel.patch \
- && MAX_JOBS=$MAX_JOBS pip install -e . \
- && rm -rf /opt/mirage/build/*/CMakeFiles
-
+# Mirage at the pinned commit with the patch (prebuilt from the GitHub release when
+# one matches, built from source otherwise; neither needs a GPU), the server's
+# Python packages and the CUDA tools in kernel/.
+COPY mirage /opt/flappy-kernel/mirage
+COPY deploy/install.sh /opt/flappy-kernel/deploy/install.sh
 COPY server/requirements.txt /opt/flappy-kernel/server/requirements.txt
-RUN pip install -r /opt/flappy-kernel/server/requirements.txt
-
 COPY kernel /opt/flappy-kernel/kernel
-RUN make -C /opt/flappy-kernel/kernel ARCH=$CUDA_ARCH
+RUN MIRAGE=/opt/mirage /opt/flappy-kernel/deploy/install.sh \
+ && rm -rf /var/lib/apt/lists/* /opt/mirage/build/*/CMakeFiles
 
 COPY server /opt/flappy-kernel/server
 COPY deploy/serve.sh /opt/flappy-kernel/deploy/serve.sh

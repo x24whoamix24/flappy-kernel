@@ -55,7 +55,6 @@ jobs:
       - name: The Mirage patch applies to the pinned commit
         run: |
           commit=$(grep -o 'MIRAGE_COMMIT=[0-9a-f]\{40\}' deploy/install.sh | cut -d= -f2)
-          grep -q "MIRAGE_COMMIT=$commit" Dockerfile || { echo "Dockerfile and deploy/install.sh pin different Mirage commits"; exit 1; }
           git clone --quiet --filter=blob:none --no-checkout https://github.com/mirage-project/mirage.git mirage-upstream
           git -C mirage-upstream checkout --quiet "$commit"
           git -C mirage-upstream apply --check "$PWD/mirage/megakernel.patch"
