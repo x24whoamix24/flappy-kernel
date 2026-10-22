@@ -1,6 +1,8 @@
-# Flappy Kernel
+<h1 align="center">Flappy Kernel</h1>
 
-![The AI flying while the same kernel decodes the LLM and trains it](docs/media/showcase.gif)
+<p align="center">
+  <img src="docs/media/showcase.gif" alt="The game, the AI learning to play it and an LLM, running in one GPU kernel" width="800">
+</p>
 
 Flappy Kernel is an arcade game: tap to fly a bird through the gaps between pipes, next to
 an AI bird on the same course, and see who lasts longer. The AI is learning the game while
@@ -66,7 +68,7 @@ behind it.
 
 ## Quick start
 
-You need an NVIDIA **H100 SXM or NVL (132 SMs)** to itself with driver 570 or newer
+You need an NVIDIA **H100** to itself with driver 570 or newer
 (CUDA 12.8), about 25 GB of GPU memory, 64 GB of host RAM and 20 GB of disk for the model;
 on Kubernetes, the NVIDIA device plugin (or GPU Operator), and for Docker, the NVIDIA
 Container Toolkit.

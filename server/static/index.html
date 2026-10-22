@@ -27,7 +27,7 @@ body { font: 15px/1.55 var(--body); }
 .wrap { max-width: 1120px; margin: 0 auto; padding-block: 20px 40px;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   display: grid; gap: 18px; }
-header { display: grid; gap: 6px; }
+header { display: grid; gap: 6px; justify-items: center; text-align: center; }
 h1 { font: 800 clamp(1.7rem, 5vw, 2.5rem)/1.05 var(--pixel); margin: 0; letter-spacing: -0.02em; text-transform: uppercase; }
 h1 .k { color: var(--you); }
 .tag { color: var(--dim); max-width: 75ch; margin: 0; }
@@ -66,6 +66,8 @@ button:disabled { opacity: 0.5; cursor: default; }
 .msg .who { font: 600 0.75rem var(--mono); color: var(--dim); }
 .msg .q { color: var(--you); font-size: 0.9rem; }
 .msg .a { white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg .a strong { color: var(--fg); font-weight: 700; }
+.msg .a code { font: 0.9em var(--mono); background: rgba(255, 255, 255, 0.06); border-radius: 4px; padding: 0 4px; }
 form { display: flex; gap: 8px; }
 input[type=text] { flex: 1; min-width: 0; font: 16px var(--body); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; }
 input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 1px; }
@@ -188,6 +190,24 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
     $("result").className = "result" + (cls ? " " + cls : "");
   }
 
+  // Answers are Markdown: show their headings, bullets, bold and code. Built
+  // from text nodes, never parsed as HTML.
+  function richText(text) {
+    var out = el("span", "a");
+    (text || "").split("\n").forEach(function (line, i) {
+      if (i) out.appendChild(document.createTextNode("\n"));
+      var target = out, heading = /^#{1,6}\s+(.*)$/.exec(line);
+      if (heading) { target = out.appendChild(el("strong")); line = heading[1]; }
+      line = line.replace(/^(\s*)[-*]\s+/, "$1• ");
+      line.split(/(\*\*[^*]+\*\*|`[^`]+`)/).forEach(function (part) {
+        if (/^\*\*[^*]+\*\*$/.test(part)) target.appendChild(el("strong", null, part.slice(2, -2)));
+        else if (/^`[^`]+`$/.test(part)) target.appendChild(el("code", null, part.slice(1, -1)));
+        else if (part) target.appendChild(document.createTextNode(part));
+      });
+    });
+    return out;
+  }
+
   function renderFeed(llm, history) {
     if (!(llm && llm.launch && llm.source === "player")) llm = null;  // only answers are shown
     var key = JSON.stringify([llm, history]);
@@ -199,7 +219,7 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
       var live = el("div", "msg now");
       live.appendChild(el("span", "who", "Answering · decoding now"));
       live.appendChild(el("span", "q", llm.prompt));
-      live.appendChild(el("span", "a", llm.text || "…"));
+      live.appendChild(richText(llm.text || "…"));
       feed.appendChild(live);
     }
     (history || []).slice().reverse().forEach(function (h) {
@@ -207,7 +227,7 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
       var m = el("div", "msg");
       m.appendChild(el("span", "who", "Answered · " + fmt(h.tok_s) + " tok/s"));
       m.appendChild(el("span", "q", h.prompt));
-      m.appendChild(el("span", "a", h.text));
+      m.appendChild(richText(h.text));
       feed.appendChild(m);
     });
   }
