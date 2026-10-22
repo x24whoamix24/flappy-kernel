@@ -117,7 +117,7 @@ Game, network and training constants are compile-time values in `kernel/core/con
 | `bench/` | Benchmarks: overhead, co-location vs separate processes, MPS, videos |
 | `Dockerfile`, `deploy/` | Container image, Helm chart, `install.sh`, `serve.sh`, pod setup |
 | `tests/` | End-to-end browser test |
-| `docs/` | Architecture, configuration, results, media |
+| `docs/` | Architecture, deployment, configuration, results, media |
 | `results/` | Raw logs and counters behind docs/results.md |
 
 ## Verification

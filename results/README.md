@@ -22,12 +22,8 @@ position), `train.csv` and `game.log` (separate trainer and game processes).
 | 112 workers: invalid TMA descriptor without co-tenants | `sweep_llm_w112/` (failed run, kept as evidence) |
 | Single launch, nothing overlapping it | `nsys/gpu_trace_summary.csv`: one kernel or copy group per row, with how many of its launches overlap `persistent_kernel` (all 0) |
 
-Not in a table: `single96/` (an earlier 96-worker run, 8.20 ms/token), `mk_game/` and
-`mk_idle/` (co-tenant modes: game only, and blocks that
-exit at once), `final/` and `final2/` (earlier showcase recordings).
-
-`video_2026-10-22/` produced the current `docs/media/showcase.mp4` and `showcase.gif`
-(`showcase/`: single-kernel megakernel, 11.35 ms/token) and `comparison.mp4` (`cmp_*/` and
+`video_2026-10-22/` produced the current `docs/media/showcase.gif` (with
+`bench/compose.py`; `showcase/`: single-kernel megakernel, 11.35 ms/token) and `comparison.mp4` (`cmp_*/` and
 `compare.json`), recorded with the score-only game frames; its numbers match the
 tables above within run-to-run noise.
 

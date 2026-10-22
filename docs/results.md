@@ -75,7 +75,8 @@ Correctness:
 
 `bench/compare.sh` runs one Qwen3-8B request (1,940 greedy tokens), the A2C trainer and
 the 30 Hz game in each setup. `bench/compare.py` scores each run inside the LLM's decode
-window, and `bench/compare_video.py` renders `docs/media/comparison.mp4` side by side.
+window, and `bench/compare_video.py` renders them side by side:
+[docs/media/comparison.mp4](media/comparison.mp4).
 
 | Setup | LLM ms/token | Training upd/s | Game | Outcome |
 |---|---|---|---|---|

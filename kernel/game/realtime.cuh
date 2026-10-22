@@ -16,9 +16,10 @@ struct GameSmem {
   int slot_active;  // arcade: whether the slot being drawn is in use
 };
 
-// The tick schedule carries over from one launch to the next. Mirage relaunches
-// the kernel for every LLM request, several times a second; restarting the
-// schedule at each launch would fire a tick early, a visible hitch.
+// The tick schedule carries over from one launch to the next, for the setups
+// that launch the kernel more than once (the benchmarks launch it once per LLM
+// request); restarting it at each launch would fire a tick early, a visible
+// hitch.
 __device__ long long resume_ticks() {
   return ld_volatile(g_ct.next_tick_ns);
 }
