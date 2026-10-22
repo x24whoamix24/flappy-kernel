@@ -4,11 +4,8 @@
   <img src="docs/media/showcase.gif" alt="The game, the AI learning to play it and an LLM, running in one GPU kernel" width="800">
 </p>
 
-Flappy Kernel is an arcade game: tap to fly a bird through the gaps between pipes, next to
-an AI bird on the same course, and see who lasts longer. The AI is learning the game while
-you play, and its bird always flies the newest version. Up to 7 people can play at once,
-each on their own course against their own AI bird; anyone else who opens the page
-watches the AI fly.
+Flappy Kernel is an arcade game: fly a bird through the pipes and race an AI bird that is
+learning the game as you play. Up to 7 people can play at once; everyone else watches.
 
 All of it runs inside one GPU launch, next to an LLM. One
 [Mirage](https://github.com/mirage-project/mirage) megakernel on one H100 runs three jobs
@@ -68,21 +65,28 @@ behind it.
 
 ## Quick start
 
-You need an NVIDIA **H100** to itself with driver 570 or newer
-(CUDA 12.8), about 25 GB of GPU memory, 64 GB of host RAM and 20 GB of disk for the model;
-on Kubernetes, the NVIDIA device plugin (or GPU Operator), and for Docker, the NVIDIA
-Container Toolkit.
+You need an NVIDIA **H100** to itself with driver 570 or newer (CUDA 12.8), about 25 GB of
+GPU memory, 64 GB of host RAM and 20 GB of disk for the model.
 
 On Kubernetes:
 
 ```bash
+# Only if the GPU nodes don't expose nvidia.com/gpu yet: NVIDIA's GPU Operator installs
+# the driver, the container toolkit and the device plugin (add --set driver.enabled=false
+# if the nodes already have a driver).
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
+helm install gpu-operator nvidia/gpu-operator -n gpu-operator --create-namespace --wait
+kubectl get nodes -o custom-columns=NODE:.metadata.name,GPUS:.status.allocatable.'nvidia\.com/gpu'
+
 helm install flappy-kernel deploy/helm/flappy-kernel
 kubectl port-forward svc/flappy-kernel 8080:80
 ```
 
-With Docker:
+With Docker, after installing the
+[NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html):
 
 ```bash
+docker run --rm --gpus all ubuntu nvidia-smi       # checks Docker can use the GPU
 docker build -t flappy-kernel .
 docker run --gpus all --shm-size 16g -p 8080:8080 -v hf-cache:/root/.cache/huggingface flappy-kernel
 ```

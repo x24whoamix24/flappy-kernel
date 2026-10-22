@@ -51,6 +51,16 @@ A player's actions take these paths:
 
 ## What the GPU and the cluster need
 
+- **The NVIDIA GPU stack.** On Kubernetes, the GPU nodes must expose `nvidia.com/gpu`
+  (check with `kubectl describe node <node> | grep nvidia.com/gpu`). If they don't,
+  NVIDIA's [GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/getting-started.html)
+  installs the driver, the container toolkit and the device plugin:
+  `helm install gpu-operator nvidia/gpu-operator -n gpu-operator --create-namespace`
+  (from the `https://helm.ngc.nvidia.com/nvidia` repository; add
+  `--set driver.enabled=false` when the nodes already have a driver). With Docker,
+  install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html);
+  `docker run --rm --gpus all ubuntu nvidia-smi` should list the H100.
+
 - **One whole H100 SXM or NVL (132 SMs) per arcade.** The GPU must not be shared:
   Mirage's persistent kernel stops producing valid tokens when another process runs
   on it. A MIG slice, a time-sliced GPU or MPS will not work. Clusters running the
