@@ -28,6 +28,11 @@ jobs:
         run: for f in $(git ls-files '*.sh'); do bash -n "$f"; done
       - name: JavaScript parses
         run: for f in $(git ls-files '*.mjs'); do node --check "$f"; done
+      - name: Helm chart lints and renders
+        run: |
+          helm lint deploy/helm/flappy-kernel
+          helm template t deploy/helm/flappy-kernel >/dev/null
+          helm template t deploy/helm/flappy-kernel --set source.url= >/dev/null
       - name: CUDA code is clang-formatted
         run: |
           pip install clang-format==18.1.8

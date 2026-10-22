@@ -14,7 +14,8 @@ Guidance for coding agents (and people) changing this repository. Read
 | `kernel/game/` | Physics, frame state, renderer, 30 Hz loop, showcase, arcade | the frames players see |
 | `kernel/host/` | Host setup, shared memory, CUDA IPC, recording | Mirage's host code, `kernel/tools/` |
 | `kernel/tools/` | `standalone` and `separate`: the co-tenants without the LLM | tests, benchmarks, `deploy/serve.sh` (`standalone layout`) |
-| `mirage/megakernel.patch` | Changes to Mirage @ `ca58a02` | `deploy/install.sh` (run by the Dockerfile and `deploy/setup_pod.sh`): applies it, or downloads Mirage prebuilt with it from the latest release |
+| `mirage/megakernel.patch` | Changes to Mirage @ `ca58a02` | `deploy/install.sh` (run by the Helm chart, the Dockerfile and `deploy/setup_pod.sh`): applies it, or downloads Mirage prebuilt with it from the latest release |
+| `deploy/` | `install.sh`, `serve.sh`, the Helm chart, `setup_pod.sh` | every way of running the arcade ([docs/deployment.md](docs/deployment.md)) |
 | `server/` | Web server (`app.py`) and page (`static/index.html`) | players |
 | `reference/` | PyTorch version of the game, network and gradient | the gradient check |
 | `bench/`, `results/` | Benchmarks and the raw results behind `docs/results.md` | docs |
@@ -32,16 +33,19 @@ docker run --rm -v "$PWD/kernel":/k -w /k nvidia/cuda:12.8.1-devel-ubuntu22.04 m
 ## Run the arcade
 
 Needs an H100 SXM or NVL (132 SMs) to itself, CUDA 12.8 and PyTorch 2.8 (the
-`pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` image). Every route runs
+`pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` image). Every way of running it runs
 `deploy/install.sh`, which downloads Mirage prebuilt with the patch from the latest
 release (about a minute) or builds it from source (about 5 minutes); then
 `deploy/serve.sh` loads Qwen3-8B and compiles the megakernel before it serves.
 
 ```bash
+# Kubernetes (stock PyTorch image; installs at start)
+helm install flappy-kernel deploy/helm/flappy-kernel
+kubectl port-forward svc/flappy-kernel 8080:80
 # Docker
 docker build -t flappy-kernel . && docker run --gpus all --shm-size 16g -p 8080:8080 \
   -v hf-cache:/root/.cache/huggingface flappy-kernel
-# a running Kubernetes GPU pod
+# your working tree in a running GPU pod (while changing the code)
 deploy/setup_pod.sh <pod> && kubectl exec <pod> -- /root/fk/deploy/serve.sh
 kubectl port-forward pod/<pod> 8080:8080
 # a Linux machine, as root
@@ -50,8 +54,9 @@ deploy/install.sh && deploy/serve.sh
 
 It is up when `curl -s localhost:8080/healthz` returns `{"stalled": false}`; open
 http://localhost:8080. Settings are environment variables of `serve.sh`
-([docs/configuration.md](docs/configuration.md)); the README's Troubleshooting covers
-the usual failures.
+([docs/configuration.md](docs/configuration.md));
+[docs/deployment.md](docs/deployment.md) explains how the parts connect and covers the
+usual failures.
 
 ## Verify a change
 
@@ -65,6 +70,7 @@ make -C kernel                                   # no warnings
 kernel/standalone layout                         # runs without a GPU
 python -m py_compile server/app.py bench/*.py reference/*.py
 for f in deploy/*.sh bench/*.sh; do bash -n "$f"; done; node --check tests/e2e.test.mjs
+helm lint deploy/helm/flappy-kernel
 clang-format --dry-run -Werror kernel/cotenant.cuh kernel/*/*.cu*  kernel/*/*.h
 git -C <mirage @ ca58a02> apply --check "$PWD/mirage/megakernel.patch"
 ```

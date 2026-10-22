@@ -9,7 +9,7 @@
 | `LLM_WORKERS` | `96` | Mirage worker blocks (SMs) for the LLM |
 | `COTENANT_BLOCKS` | `32` | Co-tenant blocks: 1 arcade + (N−1) learners. `LLM_WORKERS + 4 + COTENANT_BLOCKS` must not exceed the GPU's SM count |
 | `PORT` | `8080` | Web server port |
-| `FK`, `SERVE_DIR`, `MIRAGE` | `/root/fk`, `/var/lib/flappy-kernel`, `/root/mirage` | Install, queue and Mirage locations |
+| `FK`, `SERVE_DIR`, `MIRAGE` | the repository `serve.sh` is in, `/var/lib/flappy-kernel`, `/root/mirage` | Install, queue and Mirage locations |
 
 ## Runtime switches (environment of the Mirage process)
 

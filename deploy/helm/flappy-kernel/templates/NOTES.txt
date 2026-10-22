@@ -1,0 +1,9 @@
+The arcade is starting. The first start installs it, downloads the model and
+compiles the megakernel; follow it with
+
+  kubectl logs -f deploy/{{ .Release.Name }} -n {{ .Release.Namespace }}
+
+It is ready when the pod is Ready. Then open it:
+
+  kubectl port-forward svc/{{ .Release.Name }} -n {{ .Release.Namespace }} 8080:{{ .Values.service.port }}
+  open http://localhost:8080

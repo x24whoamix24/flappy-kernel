@@ -61,78 +61,30 @@ behind it.
 
 ## Quick start
 
-### Prerequisites
+You need an NVIDIA **H100 SXM or NVL (132 SMs)** to itself with driver 570 or newer
+(CUDA 12.8), about 25 GB of GPU memory, 64 GB of host RAM and 20 GB of disk for the model.
 
-- An NVIDIA **H100 SXM or NVL (132 SMs)** to itself. The default split needs 132
-  co-resident blocks (96 LLM workers, 4 schedulers, 32 co-tenants); see
-  [Troubleshooting](#troubleshooting) for GPUs with fewer SMs.
-- NVIDIA driver 570 or newer (CUDA 12.8), Docker with the NVIDIA Container Toolkit.
-- About 25 GB of GPU memory (Qwen3-8B weights plus the KV cache), 64 GB of host RAM
-  recommended, and disk for the ~16 GB model download and the Mirage build.
-
-### Run it with Docker
+On Kubernetes:
 
 ```bash
-docker build -t flappy-kernel .          # Mirage with the patch, and kernel/
-docker run --gpus all --shm-size 16g -p 8080:8080 \
-  -v hf-cache:/root/.cache/huggingface flappy-kernel
+helm install flappy-kernel deploy/helm/flappy-kernel
+kubectl port-forward svc/flappy-kernel 8080:80
 ```
 
-The first start downloads Qwen3-8B (~16 GB) into the `hf-cache` volume, then compiles
-the megakernel (2–3 minutes). It is up when
+With Docker:
 
 ```bash
-curl -s localhost:8080/healthz           # {"stalled": false}, HTTP 200
+docker build -t flappy-kernel .
+docker run --gpus all --shm-size 16g -p 8080:8080 -v hf-cache:/root/.cache/huggingface flappy-kernel
 ```
 
-and http://localhost:8080 shows the game. `/healthz` answers 503 with
-`{"stalled": true}` while no frames are coming from the GPU. Phones work too: open the
-page from the phone (the server must be reachable from it), tap to flap, and use
-**Share → Add to Home Screen** to run it full screen.
+Then open http://localhost:8080. The first start downloads Qwen3-8B (~16 GB) and compiles
+the megakernel; the arcade is up when `curl -s localhost:8080/healthz` returns
+`{"stalled": false}`. Phones work too: tap to flap.
 
-`deploy/k8s/base` runs the same image on Kubernetes (set the image, and add a node
-selector and a model cache as the comments there show). To build in a running GPU pod
-instead (any `pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` pod with one H100):
-
-```bash
-deploy/setup_pod.sh <pod>                        # Mirage with the patch, and kernel/
-kubectl exec <pod> -- /root/fk/deploy/serve.sh   # compiles the megakernel, then serves
-kubectl port-forward pod/<pod> 8080:8080         # open http://localhost:8080
-```
-
-On a Linux machine with an H100 and CUDA 12.8 but no Kubernetes, run `deploy/install.sh` as
-root (it installs packages, Mirage and `kernel/`), then `deploy/serve.sh`. It expects a
-Python environment with PyTorch 2.8 for CUDA 12.8 where `python` and `pip` work: the
-`pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` image, a venv or a conda env.
-
-All three routes run `deploy/install.sh`. With Python 3.11 on x86-64 (as in that image) it
-downloads a prebuilt, patched Mirage from the
-[latest release](https://github.com/x24whoamix24/flappy-kernel/releases/latest) and takes
-about a minute; otherwise, or with `MIRAGE_PREBUILT=0`, it builds Mirage from source (about
-5 minutes on 64 cores).
-
-The end-to-end test drives real Chrome against the running arcade (Node 18 or newer;
-`npx playwright install chrome` once):
-
-```bash
-npm install && node tests/e2e.test.mjs http://localhost:8080 --llm
-```
-
-### Troubleshooting
-
-- **"The GPU process is restarting" on the page, `/healthz` returns 503:** the Mirage
-  process stopped producing frames. Its output is in the container log; `serve.sh`
-  exits when either process ends, so a supervisor (Docker `--restart`, Kubernetes)
-  restarts both.
-- **"... resident blocks, but this GPU has N SMs"** at startup: the GPU has fewer than
-  132 SMs (an H100 PCIe has 114). Lower `LLM_WORKERS` and `COTENANT_BLOCKS` so that
-  `LLM_WORKERS + 4 + COTENANT_BLOCKS` fits.
-- **Mirage stops producing tokens:** another CUDA process (or MPS) shares the GPU.
-  Mirage's persistent kernels need the GPU to themselves
-  ([docs/results.md](docs/results.md)).
-- **The page connects but the WebSocket is refused (403):** it is served under another
-  origin; pass `--allow-origin https://your.host` to `serve.sh`. Behind a reverse proxy,
-  pass `--trust-proxy` so per-address limits use the client's address.
+[docs/deployment.md](docs/deployment.md) explains how the parts connect, the chart's
+settings, running on a plain machine, putting the arcade on a public address, and
+troubleshooting.
 
 ## Configuration
 
@@ -163,7 +115,7 @@ Game, network and training constants are compile-time values in `kernel/core/con
 | `server/` | Web server (`app.py`) and the page players open |
 | `reference/` | PyTorch reference of the game and trainer, and the gradient check |
 | `bench/` | Benchmarks: overhead, co-location vs separate processes, MPS, videos |
-| `Dockerfile`, `deploy/` | Container image, generic Kubernetes manifests, pod setup, `serve.sh` |
+| `Dockerfile`, `deploy/` | Container image, Helm chart, `install.sh`, `serve.sh`, pod setup |
 | `tests/` | End-to-end browser test |
 | `docs/` | Architecture, configuration, results, media |
 | `results/` | Raw logs and counters behind docs/results.md |

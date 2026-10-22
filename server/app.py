@@ -6,8 +6,8 @@ share one block of memory (COTENANT_SHM). Players' flaps go into it; the GPU's
 arcade block steps every game at 30 Hz and renders each player's frame into it.
 This server encodes each new frame once and broadcasts it to everyone viewing
 that game. LLM questions go through a queue directory that the megakernel
-process serves one launch at a time; the tokens it decodes are read live from
-the shared block.
+process serves one at a time, all in its one launch; the tokens it decodes are
+read live from the shared block.
 
 usage: python app.py --shm /flappy --layout layout.json --serve-dir /var/lib/flappy-kernel
 """
