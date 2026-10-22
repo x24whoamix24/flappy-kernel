@@ -53,6 +53,18 @@ __device__ __forceinline__ int ld_acquire(int const *p) {
   return v;
 }
 
+// The same at system scope, for host memory the host (or another GPU thread
+// with a system-scope release) writes: later loads cannot see older values
+// than the ones the writer published before this one.
+__device__ __forceinline__ int ld_acquire_sys(int const volatile *p) {
+  int v;
+  asm volatile("ld.acquire.sys.global.s32 %0, [%1];"
+               : "=r"(v)
+               : "l"(p)
+               : "memory");
+  return v;
+}
+
 // Accesses that always go to memory, for values another block or the host
 // changes while this one runs.
 template <typename T> __device__ __forceinline__ T ld_volatile(T const *p) {

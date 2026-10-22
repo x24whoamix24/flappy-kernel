@@ -2,7 +2,7 @@
 // The co-tenant workloads as ordinary separate GPU processes, for comparison
 // with the megakernel:
 //   separate train <blocks> <ipc_file> <stop_file>
-//       persistent A2C learner kernel ($COTENANT_MODE=3); publishes the
+//       persistent A2C learner kernel (training only); publishes the
 //       weights over CUDA IPC and logs updates to stdout every 250 ms
 //   separate game <ipc_file> <stop_file>
 //       30 Hz game loop launching one tick+render kernel per frame on the
@@ -54,6 +54,8 @@ static void print_progress(HostShared const volatile *sh) {
 
 static int
 cmd_train(int blocks, std::string const &ipc, std::string const &stop) {
+  // Training only: the game runs in the other process.
+  setenv("COTENANT_MODE", "3", 1);
   host_init(blocks);
   export_ipc(ipc);
   cudaStream_t stream;

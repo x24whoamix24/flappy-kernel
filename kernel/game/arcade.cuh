@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-// The multiplayer arcade (COTENANT_MODE=4). One block, every tick:
+// The arcade (COTENANT_MODE=4): up to kSlots - 1 players, each racing the AI
+// on their own course, plus the watch view. One block, every tick:
 //   1. steps every game slot: the player's bird with the flaps the host
 //      relays, the AI's bird with the live policy, through the same pipes,
 //   2. copies the tokens the LLM decoded since the last tick to the host,
@@ -56,16 +57,18 @@ __device__ void slot_play(SlotState &s, float const *w, bool flap) {
 }
 
 // One tick of slot i, by thread 0. The host's controls are read once, here,
-// and validated; everything else the slot needs lives in device memory.
+// and validated; everything else the slot needs lives in device memory. The
+// host writes `mode`, then bumps `start_seq`, then sets `assigned`; the
+// acquire loads keep the later reads from seeing older values.
 __device__ void slot_tick(int i, float const *w) {
   SlotState &s = g_ct.slots[i];
   SlotIO volatile &io = g_ct.host->slot[i];
-  if (!io.assigned) {
+  if (!ld_acquire_sys(&io.assigned)) {
     s.phase = kIdle;
     io.phase = kIdle;
     return;
   }
-  int const start_seq = io.start_seq;
+  int const start_seq = ld_acquire_sys(&io.start_seq);
   int const flap_seq = io.flap_seq;
   int const requested_mode = io.mode;
   SlotMode const mode = requested_mode == kSolo || requested_mode == kWatch
@@ -103,7 +106,9 @@ struct LlmView {
 // only. Mirage either serves one request per launch (`request_id` null) or,
 // online, every request in one launch: then `request_id` holds the id of the
 // request in the token row (-1 while the row is free), and the scheduler
-// release-stores `decode_step` after writing the tokens up to it.
+// release-stores `decode_step` after writing the tokens up to it. Online, both
+// live in host memory, which the host writes too, so they are read at system
+// scope; the scheduler sets the prompt length before publishing the id.
 struct LlmFeed {
   int request; // the request being copied, -1 for none
   int copied;  // highest position already in host memory
@@ -143,15 +148,16 @@ struct LlmFeed {
       copy_upto(llm.tokens, flush ? pos : pos - 1);
       return;
     }
-    int const id = ld_acquire(llm.request_id);
+    int const id = ld_acquire_sys(llm.request_id);
     if (id < 0) {
       return;
     }
     if (id != request) {
       begin(id, ld_volatile(llm.prompt_length));
     }
-    int const pos = ld_acquire(llm.decode_step); // -1 once the host has read it
-    if (pos >= 0 && ld_volatile(llm.request_id) == id) {
+    int const pos =
+        ld_acquire_sys(llm.decode_step); // -1 once the host has read it
+    if (pos >= 0 && ld_acquire_sys(llm.request_id) == id) {
       copy_upto(llm.tokens, pos);
     }
   }

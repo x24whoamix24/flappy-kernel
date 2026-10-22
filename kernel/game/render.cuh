@@ -70,12 +70,12 @@ __device__ __forceinline__ uint32_t score_pixel(Frame const &f, int x, int y) {
       y >= kScoreY + kGlyphH * kScoreScale + kScoreOutline) {
     return kTransparent;
   }
-  if (text_hit(f.score, f.score_len, x0, kScoreY, kScoreScale, x, y)) {
+  if (digits_hit(f.score, f.score_len, x0, kScoreY, kScoreScale, x, y)) {
     return kScoreText;
   }
   for (int dy = -kScoreOutline; dy <= kScoreOutline; dy += kScoreOutline) {
     for (int dx = -kScoreOutline; dx <= kScoreOutline; dx += kScoreOutline) {
-      if (text_hit(
+      if (digits_hit(
               f.score, f.score_len, x0, kScoreY, kScoreScale, x + dx, y + dy)) {
         return kInk;
       }
@@ -111,7 +111,8 @@ __constant__ char kBirdSprite[kSpriteH][kSpriteW + 1] = {
 struct BirdColours {
   uint32_t body, belly;
 };
-constexpr BirdColours kPlayerColours{rgb(250, 204, 46), rgb(247, 160, 47)};
+// The main bird: the player's, or the AI's in the single-game view.
+constexpr BirdColours kMainColours{rgb(250, 204, 46), rgb(247, 160, 47)};
 constexpr BirdColours kAiColours{rgb(120, 190, 255), rgb(70, 130, 230)};
 constexpr uint32_t kBirdWhite = rgb(252, 252, 246);
 constexpr uint32_t kWingShade = rgb(226, 212, 170);
@@ -168,7 +169,7 @@ __device__ __forceinline__ uint32_t birds_pixel(Frame const &f, int x, int y) {
     col = bird_pixel(f.ai_y, f.ai_tilt, kAiColours, f.ai_alive, x, y);
   }
   if (col == kTransparent && f.show_main) {
-    col = bird_pixel(f.course.y, f.main_tilt, kPlayerColours, true, x, y);
+    col = bird_pixel(f.course.y, f.main_tilt, kMainColours, true, x, y);
   }
   return col;
 }

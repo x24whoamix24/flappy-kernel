@@ -14,12 +14,12 @@
 //   training/policy.cuh    the policy network and its gradient
 //   training/trainer.cuh   the learner blocks
 //   game/physics.cuh       game rules and observation
-//   game/font.cuh          5x7 text and number formatting
+//   game/font.cuh          5x7 digits and number formatting
 //   game/frame.cuh         what a frame shows (birds and score)
 //   game/render.cuh        drawing a frame, layer by layer
 //   game/realtime.cuh      the 30 Hz tick of the game block
 //   game/showcase.cuh      the single-game view
-//   game/arcade.cuh        the multiplayer arcade
+//   game/arcade.cuh        the arcade: players racing the AI
 //   host/host.h            host-side setup, IPC and recording
 //   tools/                 standalone and separate-process test tools
 // The physics, observation, network and update mirror reference/a2c_flappy.py.

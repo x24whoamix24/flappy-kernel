@@ -67,6 +67,10 @@ static int cmd_grad(std::string const &dir) {
   std::vector<float> const w = read_floats(dir + "/w.bin");
   std::vector<float> const samples = read_floats(dir + "/samples.bin");
   int const n = int(samples.size() / (kObs + 2));
+  // accumulate_grad's shuffles need every lane of a warp to have a sample.
+  if (n % kWarpSize != 0) {
+    fail("the sample count must be a multiple of 32, not", std::to_string(n));
+  }
   float *d_w = dev_alloc<float>(kParamsPadded);
   float *d_samples = dev_alloc<float>(samples.size());
   float *d_g = dev_alloc<float>(kParamsPadded);

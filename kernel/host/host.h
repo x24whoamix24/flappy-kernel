@@ -84,8 +84,7 @@ template <typename T> void upload(T *dst, T const *src, size_t n = 1) {
   CT_CUDA(cudaMemcpy(dst, src, n * sizeof(T), cudaMemcpyHostToDevice));
 }
 
-// ---------------------------------------------------------------- initial
-// state
+// ---------------------------------------------------------------- state
 
 // A fresh course drawn from `seed`.
 inline Env make_env(uint32_t seed) {
@@ -171,7 +170,11 @@ inline void host_init(int num_blocks) {
   State &s = h.state;
   int const nl = num_blocks - 1;
   size_t const num_envs = size_t(nl) * kEnvsPerLearner;
-  s.mode = Mode(env_or("COTENANT_MODE", kModeShowcase));
+  long long const mode = env_or("COTENANT_MODE", kModeShowcase);
+  if (mode < kModeShowcase || mode > kModeArcade) {
+    fail("unknown COTENANT_MODE", std::to_string(mode));
+  }
+  s.mode = Mode(mode);
   s.num_learners = nl;
   s.max_updates = env_or("COTENANT_MAX_UPDATES", 1LL << 62);
   s.stop = dev_alloc<int>();
@@ -209,18 +212,17 @@ inline void host_init(int num_blocks) {
 }
 
 // ---------------------------------------------------------------- CUDA IPC
-// A trainer process publishes the buffers the game reads; a game process
+// A trainer process publishes the weights the game reads; a game process
 // (tools/separate.cu) opens them.
 
 struct IpcHandles {
-  cudaIpcMemHandle_t weights, progress;
+  cudaIpcMemHandle_t weights;
 };
 
 inline void export_ipc(std::string const &path) {
   State const &s = host().state;
   IpcHandles handles;
   CT_CUDA(cudaIpcGetMemHandle(&handles.weights, s.weights));
-  CT_CUDA(cudaIpcGetMemHandle(&handles.progress, s.progress));
   // Written under another name and renamed, so a reader never sees half.
   std::string const tmp = path + ".tmp";
   FILE *f = fopen(tmp.c_str(), "wb");
@@ -247,7 +249,6 @@ inline void import_ipc_for_game(std::string const &path) {
     return p;
   };
   s.weights = static_cast<float *>(open(handles.weights));
-  s.progress = static_cast<Progress *>(open(handles.progress));
   s.stop = dev_alloc<int>();
   Env const showcase = make_env(env_seed(kSeparateGameSeedIndex));
   s.showcase_env = dev_alloc<Env>();

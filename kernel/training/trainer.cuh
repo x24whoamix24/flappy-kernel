@@ -233,7 +233,7 @@ __device__ void run_learner(int learner, char *smem_raw) {
       record_progress(step);
     }
     __threadfence();
-    learner_barrier(s.flag); // nobody reads the weights mid-update
+    learner_barrier(s.flag); // no learner reads the weights mid-update
     if (stop) {
       break;
     }

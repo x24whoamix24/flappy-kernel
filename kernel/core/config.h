@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Compile-time configuration of the co-tenant workloads: block shape, game
-// rules, the policy network and the trainer. Changing a value changes the
-// shared-memory layout: rebuild kernel/ and regenerate server/layout.json
-// (deploy/serve.sh does both).
+// rules, the policy network and the trainer. The screen size, kSlots and
+// kLlmMaxTokens set the shared-memory layout: after changing them, rebuild
+// kernel/ and regenerate server/layout.json (deploy/serve.sh does both).
 #pragma once
 
 #include <cstdint>
@@ -25,7 +25,7 @@ enum Mode : int {
   kModeGameOnly = 1,     // single-game view, no training
   kModeIdle = 2,         // co-tenant blocks exit at once (overhead baseline)
   kModeTrainingOnly = 3, // training, no game
-  kModeArcade = 4,       // multiplayer arcade + training (the server)
+  kModeArcade = 4,       // the arcade (players race the AI) + training
 };
 
 // ---------------------------------------------------------------- game

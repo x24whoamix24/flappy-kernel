@@ -209,7 +209,7 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
   }
 
   function renderFeed(llm, history) {
-    if (!(llm && llm.launch && llm.source === "player")) llm = null;  // only answers are shown
+    if (!(llm && llm.launch && llm.prompt)) llm = null;  // nothing known being answered
     var key = JSON.stringify([llm, history]);
     if (key === lastFeed) return;  // keep scroll position and selection
     lastFeed = key;

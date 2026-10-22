@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Game rules: reset, observation, and one physics tick split into the
 // pipes and each bird, so the arcade can fly a player and the AI through one
-// course. Mirrors reference/a2c_flappy.py exactly.
+// course. Mirrors reference/a2c_flappy.py (whose courses come from torch's
+// random generator, not xorshift).
 #pragma once
 
 #include "../core/device_util.cuh"
@@ -29,6 +30,13 @@ __device__ __forceinline__ bool pipe_ahead(Env const &e, int i) {
   return e.px[i] + kPipeW > kBirdX;
 }
 
+// A pipe is behind the birds from when its right edge passes their left edge
+// until it wraps around, a stretch of about kBirdX + kPipeSpeed pixels. That is
+// shorter than the spacing, so at most one pipe is behind and the observation
+// always has two pipes ahead.
+static_assert(kNumPipes >= 3 && kPipeSpacing > kBirdX + kPipeSpeed,
+              "env_observe needs two pipes ahead of the birds");
+
 // The policy's input for a bird at (y, vy) on course `e`: the bird's height
 // and speed, the distance to the nearest pipe ahead, the edges of its gap, and
 // the top of the next pipe's gap, normalized by the screen size.
@@ -43,16 +51,6 @@ __device__ void env_observe(Env const &e, float y, float vy, float (&o)[kObs]) {
       d0 = d, i0 = i;
     } else if (d < d1) {
       d1 = d, i1 = i;
-    }
-  }
-  if (d1 >= kNone) {
-    // Only one pipe ahead: take the next one the way numpy's argsort breaks
-    // the tie between the pipes behind.
-    for (int i = 0; i < kNumPipes; i++) {
-      if (i != i0 && !pipe_ahead(e, i)) {
-        i1 = i;
-        break;
-      }
     }
   }
   o[0] = y / kScreenH;

@@ -219,10 +219,12 @@ class Arcade:
             cur = json.loads((self.dir / "current.json").read_text())
         except (OSError, ValueError):
             cur = {}
-        mine = isinstance(cur, dict) and cur.get("launch") == launch
-        current = {"launch": launch, "source": "player" if mine else "",
-                   "prompt": cur.get("prompt", "") if mine else "",
-                   "text": self.tok.decode(ids, skip_special_tokens=True) if mine and ids else "",
+        # The question being answered, once current.json names the request
+        # whose tokens are in shared memory.
+        known = isinstance(cur, dict) and cur.get("launch") == launch
+        current = {"launch": launch,
+                   "prompt": cur.get("prompt", "") if known else "",
+                   "text": self.tok.decode(ids, skip_special_tokens=True) if known and ids else "",
                    "tokens": len(ids)}
         # Finished files never change: read each new one once, oldest first.
         done = self.dir / "done"
