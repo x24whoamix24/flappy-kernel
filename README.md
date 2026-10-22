@@ -2,11 +2,6 @@
 
 ![The AI flying while the same kernel decodes the LLM and trains it](docs/media/showcase.gif)
 
-*One H100, one kernel launch (1.75x speed): the game, the AI flying the policy being trained
-at that moment, and Qwen3-8B decoding, side by side with the live counters.
-Full recordings: [showcase](docs/media/showcase.mp4) ·
-[co-located vs separate processes](docs/media/comparison.mp4).*
-
 Flappy Kernel is a multiplayer arcade game that runs inside one GPU launch, next to an LLM
 and a training job. One [Mirage](https://github.com/mirage-project/mirage) megakernel on
 one H100 runs all three at once:

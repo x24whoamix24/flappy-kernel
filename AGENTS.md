@@ -29,8 +29,29 @@ make -C kernel                       # needs nvcc (CUDA 12.8)
 docker run --rm -v "$PWD/kernel":/k -w /k nvidia/cuda:12.8.1-devel-ubuntu22.04 make
 ```
 
-The full arcade (Mirage + LLM + server) builds from the `Dockerfile`; see the
-README's Quick start.
+## Run the arcade
+
+Needs an H100 SXM or NVL (132 SMs) to itself, CUDA 12.8 and PyTorch 2.8 (the
+`pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` image). Every route runs
+`deploy/install.sh`, which downloads Mirage prebuilt with the patch from the latest
+release (about a minute) or builds it from source (about 5 minutes); then
+`deploy/serve.sh` loads Qwen3-8B and compiles the megakernel before it serves.
+
+```bash
+# Docker
+docker build -t flappy-kernel . && docker run --gpus all --shm-size 16g -p 8080:8080 \
+  -v hf-cache:/root/.cache/huggingface flappy-kernel
+# a running Kubernetes GPU pod
+deploy/setup_pod.sh <pod> && kubectl exec <pod> -- /root/fk/deploy/serve.sh
+kubectl port-forward pod/<pod> 8080:8080
+# a Linux machine, as root
+deploy/install.sh && deploy/serve.sh
+```
+
+It is up when `curl -s localhost:8080/healthz` returns `{"stalled": false}`; open
+http://localhost:8080. Settings are environment variables of `serve.sh`
+([docs/configuration.md](docs/configuration.md)); the README's Troubleshooting covers
+the usual failures.
 
 ## Verify a change
 
