@@ -182,6 +182,10 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
   }
 
   function fmt(v, d) { return v == null ? "–" : Number(v).toLocaleString(undefined, { maximumFractionDigits: d || 0 }); }
+  // Counts that pass millions within minutes: "2.02M" fits a gauge; the exact
+  // count is in its tooltip.
+  var compact = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 2 });
+  function fmtCompact(v) { return v == null ? "–" : compact.format(Number(v)); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function setResult(text, cls) {
     if (text + cls === lastResult) return;
@@ -238,7 +242,8 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
     $("g-upd").textContent = fmt(st.upd_s);
     $("g-players").textContent = fmt(st.players);
     $("g-best").textContent = fmt(st.best_human);
-    $("g-total").textContent = fmt(st.episodes);
+    $("g-total").textContent = fmtCompact(st.episodes);
+    $("g-total").title = fmt(st.episodes);
     $("live").className = st.stalled ? "live off" : "live";
     $("live-text").textContent = st.stalled ? "the GPU process is restarting…" : "live from the H100";
     renderFeed(s.llm, s.history);

@@ -1,11 +1,11 @@
 <h1 align="center">Flappy Kernel</h1>
 
 <p align="center">
-  <img src="docs/media/race.gif" alt="A player (yellow) racing the AI (blue, labelled AI) through the pipes, rendered by the GPU kernel" width="288">
+  <img src="docs/media/race.gif" alt="The arcade page: a player (yellow) races the AI (blue, labelled AI) while the LLM's answer streams in from the same GPU kernel, ending on the race's result" width="760">
 </p>
 
 Flappy Kernel is an arcade game: fly a bird through the pipes and race an AI bird that is
-learning the game as you play. Up to 7 people can play at once; everyone else watches.
+learning the game as you play. Up to 7 people can play at once.
 
 All of it runs inside one GPU launch, next to an LLM. One
 [Mirage](https://github.com/mirage-project/mirage) megakernel on one H100 runs three jobs

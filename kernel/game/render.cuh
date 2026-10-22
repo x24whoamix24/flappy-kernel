@@ -205,17 +205,19 @@ __device__ uint32_t bird_pixel(
   return alive || col == kTransparent ? col : fade_to_grey(col);
 }
 
-// The main bird is drawn over the AI's: the birds share one x, and players
-// must always see their own.
-__device__ __forceinline__ uint32_t birds_pixel(Frame const &f, int x, int y) {
-  uint32_t col = kTransparent;
-  if (f.show_main) {
-    col = bird_pixel(f.course.y, f.main_tilt, kMainColours, true, x, y);
-  }
-  if (col == kTransparent && f.show_ai) {
-    col = bird_pixel(f.ai_y, f.ai_tilt, kAiColours, f.ai_alive, x, y);
-  }
-  return col;
+__device__ __forceinline__ uint32_t main_bird_pixel(Frame const &f,
+                                                    int x,
+                                                    int y) {
+  return f.show_main
+             ? bird_pixel(f.course.y, f.main_tilt, kMainColours, true, x, y)
+             : kTransparent;
+}
+
+__device__ __forceinline__ uint32_t ai_bird_pixel(Frame const &f,
+                                                  int x,
+                                                  int y) {
+  return f.show_ai ? bird_pixel(f.ai_y, f.ai_tilt, kAiColours, f.ai_alive, x, y)
+                   : kTransparent;
 }
 
 // ---------------------------------------------------------------- ground
@@ -349,13 +351,18 @@ __device__ __forceinline__ uint32_t scenery_pixel(long long tick,
 // ---------------------------------------------------------------- frame
 
 __device__ uint32_t shade(Frame const &f, int x, int y) {
+  // The birds share one x. The player's bird is drawn over the AI's bird and
+  // its label, so players always see their own.
   if (uint32_t const c = score_pixel(f, x, y)) {
+    return c;
+  }
+  if (uint32_t const c = main_bird_pixel(f, x, y)) {
     return c;
   }
   if (uint32_t const c = ai_label_pixel(f, x, y)) {
     return c;
   }
-  if (uint32_t const c = birds_pixel(f, x, y)) {
+  if (uint32_t const c = ai_bird_pixel(f, x, y)) {
     return c;
   }
   if (y >= kGroundY) {
