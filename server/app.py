@@ -37,7 +37,7 @@ WATCH_MODE = 2
 MAX_CLIENTS = 300           # open connections in total
 MAX_CLIENTS_PER_IP = 8
 MAX_MSGS_PER_S = 40         # a client above this is disconnected
-SLOT_IDLE_S = 30            # a player slot without a flap for this long is freed
+SLOT_IDLE_S = 30            # with every slot taken, one idle this long goes to a newcomer
 PROMPT_MAX_CHARS = 280
 PROMPT_EVERY_S = 0          # seconds between questions per address; 0: no limit
 QUEUE_MAX = 20
@@ -173,7 +173,14 @@ class Arcade:
                 return None  # one game per address
             free = [i for i in range(1, self.sh.slots) if i not in self.owner]
             if not free:
-                return None
+                # Every slot is taken: the one longest without a flap goes to
+                # the newcomer, if nobody has flapped there for SLOT_IDLE_S.
+                idle = min(self.owner.values(), key=lambda c: c.last_flap)
+                if time.time() - idle.last_flap <= SLOT_IDLE_S:
+                    return None
+                free = [idle.slot]
+                self.leave(idle)
+                self.push(idle, "notice", json.dumps({"t": "joined", "slot": None, "idle": True}))
             client.slot = free[0]
             self.owner[client.slot] = client
             self.frames.pop(client.slot, None)
@@ -319,11 +326,8 @@ class Arcade:
                 if dt > 0:
                     self.rates = {"tok_s": (window[-1][1] - window[0][1]) / dt,
                                   "upd_s": (window[-1][2] - window[0][2]) / dt}
-                for slot, c in list(self.owner.items()):
+                for slot in self.owner:
                     self.best_human = max(self.best_human, self.sh.slot_get(slot, "you_score"))
-                    if now - c.last_flap > SLOT_IDLE_S:
-                        self.leave(c)
-                        self.push(c, "notice", json.dumps({"t": "joined", "slot": None, "idle": True}))
                 stats = {**counters, **self.rates, "players": len(self.owner),
                          "viewers": len(self.clients), "best_human": self.best_human,
                          "queued": self.queued(), "stalled": self.stalled()}
