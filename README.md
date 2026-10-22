@@ -1,7 +1,7 @@
 <h1 align="center">Flappy Kernel</h1>
 
 <p align="center">
-  <img src="docs/media/race.gif" alt="The arcade page: a player (yellow) races the AI (blue, labelled AI) while the LLM's answer streams in from the same GPU kernel, ending on the race's result" width="760">
+  <img src="docs/media/race.gif" alt="The arcade page: a player (yellow) races the AI (blue, labelled AI) while the LLM's answer streams in from the same GPU kernel, ending on the race's result" width="560">
 </p>
 
 Flappy Kernel is an arcade game: fly a bird through the pipes and race an AI bird that is
