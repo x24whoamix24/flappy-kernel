@@ -1,16 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 """Records the arcade page during a race, for docs/media/race.gif: headless
 Chrome on the same host as the server (so flaps arrive without lag) races the
-AI, flying the bird from what the canvas shows; a question asked from another
-connection streams in during the race; after <seconds> it stops flapping, so
-the recording ends on the result. Needs `pip install playwright` and
+AI, flying the bird from what the canvas shows. It first types a question into
+the page and sends it, so the answer streams in during the race; after
+<seconds> it stops flapping, so the recording ends on the result. Needs `pip install playwright` and
 `python -m playwright install --with-deps chromium`.
 
     python bench/race_page.py http://localhost:8080 <video dir> <seconds>
 
 The video (1280 x 720, the page as players see it) is a .webm in <video dir>;
 ffmpeg turns it into the GIF."""
-import subprocess, sys, time
+import sys, time
 from playwright.sync_api import sync_playwright
 
 READ = """() => {
@@ -37,14 +37,8 @@ READ = """() => {
   return { top, ai, gap, result: document.getElementById('result').textContent };
 }"""
 
-ASK = """
-import asyncio, sys, aiohttp
-async def main():
-    async with aiohttp.ClientSession() as s, s.ws_connect(sys.argv[1]) as ws:
-        await ws.send_json({"t": "prompt", "text": "Write a short story, about 400 words, about a little bird that learns to fly through pipes inside a GPU, while a neural network beside it learns faster."})
-        await asyncio.sleep(2)
-asyncio.run(main())
-"""
+QUESTION = ("Write a short story, about 400 words, about a little bird racing an AI "
+            "through pipes inside a GPU.")
 
 url, out, play_s = sys.argv[1], sys.argv[2], float(sys.argv[3])
 with sync_playwright() as p:
@@ -53,18 +47,18 @@ with sync_playwright() as p:
                         record_video_dir=out, record_video_size={"width": 1280, "height": 720})
     page = ctx.new_page()
     page.goto(url)
-    page.wait_for_timeout(4000)
+    page.wait_for_timeout(3000)
+    page.click("#question")
+    page.keyboard.type(QUESTION, delay=35)            # typed, as a player would
+    page.wait_for_timeout(400)
+    page.click("#ask-btn")
+    page.wait_for_timeout(800)
     page.click("#play-race")
-    page.wait_for_timeout(1500)
+    page.wait_for_timeout(1200)
     page.locator("canvas").focus()
     page.keyboard.press("Space")                       # start the race
-    t0, last, prev, gap, asked = time.time(), 0.0, None, None, False
+    t0, last, prev, gap = time.time(), 0.0, None, None
     while time.time() - t0 < play_s:
-        if not asked and time.time() - t0 > 2:
-            # Asked from another connection, so the answer streams in during
-            # the race without pausing the bird.
-            subprocess.Popen([sys.executable, "-c", ASK, url.replace("http", "ws") + "/ws"])
-            asked = True
         s = page.evaluate(READ)
         gap = s["gap"] if s["gap"] is not None else gap
         top, ai = s["top"], s["ai"]

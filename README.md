@@ -71,13 +71,14 @@ GPU memory, 64 GB of host RAM and 20 GB of disk for the model.
 On Kubernetes:
 
 ```bash
-# Only if the GPU nodes don't expose nvidia.com/gpu yet: NVIDIA's GPU Operator installs
-# the driver, the container toolkit and the device plugin (add --set driver.enabled=false
-# if the nodes already have a driver).
+# Installing NVIDIA dependencies if not present: when the GPU nodes don't expose
+# nvidia.com/gpu yet, NVIDIA's GPU Operator installs the driver, the container toolkit
+# and the device plugin (add --set driver.enabled=false if the nodes have a driver).
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
 helm install gpu-operator nvidia/gpu-operator -n gpu-operator --create-namespace --wait
 kubectl get nodes -o custom-columns=NODE:.metadata.name,GPUS:.status.allocatable.'nvidia\.com/gpu'
 
+# Installing Flappy Kernel to run it
 helm install flappy-kernel deploy/helm/flappy-kernel
 kubectl port-forward svc/flappy-kernel 8080:80
 ```
@@ -86,7 +87,10 @@ With Docker, after installing the
 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html):
 
 ```bash
-docker run --rm --gpus all ubuntu nvidia-smi       # checks Docker can use the GPU
+# Checking the NVIDIA dependencies: Docker can use the GPU
+docker run --rm --gpus all ubuntu nvidia-smi
+
+# Installing Flappy Kernel to run it
 docker build -t flappy-kernel .
 docker run --gpus all --shm-size 16g -p 8080:8080 -v hf-cache:/root/.cache/huggingface flappy-kernel
 ```
