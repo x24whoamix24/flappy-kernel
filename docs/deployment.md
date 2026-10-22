@@ -49,6 +49,25 @@ A player's actions take these paths:
 
 [architecture.md](architecture.md) goes further into the kernel side.
 
+## What the GPU and the cluster need
+
+- **One whole H100 SXM or NVL (132 SMs) per arcade.** The GPU must not be shared:
+  Mirage's persistent kernel stops producing valid tokens when another process runs
+  on it. A MIG slice, a time-sliced GPU or MPS will not work. Clusters running the
+  NVIDIA device plugin or GPU Operator expose whole GPUs as `nvidia.com/gpu` by default.
+  If yours shares GPUs, pin the pod to nodes that do not; GPU Feature Discovery labels
+  them `nvidia.com/gpu.sharing-strategy=none`. An H100 PCIe (114 SMs) needs smaller
+  settings ([Troubleshooting](#troubleshooting)).
+- **A pod running as root.** The pod installs system packages at start, so a namespace
+  that enforces the `restricted` Pod Security level rejects it. `baseline` allows it,
+  unless you use `modelCache.hostPath`.
+- **Network access from the pod:** GitHub (the source and the prebuilt Mirage:
+  `github.com` and the hosts it redirects downloads to), Ubuntu's package mirrors, PyPI, and `huggingface.co` on the first
+  start. A source build of Mirage also needs `sh.rustup.rs`, `crates.io` and the
+  Mirage repository. Proxies set with `HTTP_PROXY`/`HTTPS_PROXY` in `env` are used.
+  Without network access, use your own image and a model cache filled beforehand, and
+  set `env.HF_HUB_OFFLINE: "1"`.
+
 ## Kubernetes with Helm
 
 ```bash
@@ -61,42 +80,56 @@ The chart creates one Deployment (one pod, one GPU) and one Service. By default 
 pod runs the stock `pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` image, so there is no
 image to build. On each start the pod:
 
-1. downloads the arcade's source from `source.url` (a release archive);
-2. runs `deploy/install.sh`, which installs Mirage prebuilt with the patch from the
-   GitHub release, in about a minute, and builds Mirage from source if no prebuilt one
-   matches;
+1. downloads the arcade's source for the chart's version from GitHub;
+2. runs `deploy/install.sh`, which installs system and Python packages and Mirage. It
+   downloads Mirage prebuilt with the patch from the same release (about a minute in
+   all); without one, it builds Mirage from source (about 5 minutes on 64 cores, longer
+   on fewer);
 3. runs `deploy/serve.sh`, which loads the model, compiles the megakernel and serves.
 
-The pod reports Ready once frames come from the GPU. The startup probe allows 30
-minutes, which covers downloading the model on the first start.
+On one H100 node with the model already cached, the pod was Ready in under two
+minutes. The pod reports Ready once frames come from the GPU; the startup probe waits
+up to `startupTimeoutMinutes` (60).
 
 | Value | Default | Meaning |
 |---|---|---|
-| `source.url` | this release's source archive | where the pod downloads the arcade from; `""` runs the image's own copy (see below) |
-| `image.repository`, `image.tag` | `pytorch/pytorch`, `2.8.0-cuda12.8-cudnn9-devel` | container image |
-| `env` | `MODEL`, `MAX_SEQ`, `LLM_WORKERS`, `COTENANT_BLOCKS` | environment of `serve.sh` ([configuration.md](configuration.md)) |
+| `source.enabled`, `source.url` | `true`, the chart version's GitHub archive | download and install the arcade at start; `false` runs your own image's copy (see below) |
+| `image.repository`, `image.tag`, `imagePullSecrets` | `pytorch/pytorch`, `2.8.0-cuda12.8-cudnn9-devel`, none | container image |
+| `env` | `MODEL`, `MAX_SEQ`, `LLM_WORKERS`, `COTENANT_BLOCKS` | environment of `serve.sh` ([configuration.md](configuration.md)) and `install.sh` (below) |
+| `extraEnv` | `[]` | more environment in the container's own form, e.g. `HF_TOKEN` from a Secret |
 | `serverArgs` | `[]` | extra web server options, e.g. `[--allow-origin, https://arcade.example.com, --trust-proxy]` |
-| `modelCache.existingClaim` | `""` | a PersistentVolumeClaim that keeps the model across restarts |
-| `modelCache.hostPath` | `""` | or a directory on the node; with neither, each restart downloads the model again |
+| `modelCache.existingClaim` | `""` | a PersistentVolumeClaim that keeps the model |
+| `modelCache.size`, `modelCache.storageClass` | `""` | or let the chart create one (e.g. `40Gi`); it is kept when you uninstall |
+| `modelCache.hostPath` | `""` | or a directory on the node. With none of the three, each new pod downloads the model again |
 | `service.type`, `service.port` | `ClusterIP`, `80` | `LoadBalancer` or `NodePort` to reach it without port-forward |
-| `resources` | 16 CPUs, 64 GiB, 1 GPU | requests and limits |
-| `runtimeClassName`, `nodeSelector`, `tolerations` | empty | to place the pod on an H100 node |
+| `resources` | 16 CPUs, 64 GiB (96 GiB limit), 1 GPU | requests and limits |
+| `startupTimeoutMinutes` | `60` | how long the first start may take |
+| `runtimeClassName` | `""` | `nvidia` where the NVIDIA runtime is not the node's default (some k3s, RKE2 and containerd setups) |
+| `nodeSelector`, `affinity`, `tolerations` | empty | place the pod on an H100 node |
 
-For example, keeping the model on a volume and pinning the pod to H100 nodes:
+A typical install on a mixed GPU cluster keeps the model on a volume, accepts the
+GPU nodes' taint and requires an H100:
 
-```bash
-helm install flappy-kernel deploy/helm/flappy-kernel \
-  --set modelCache.existingClaim=hf-cache \
-  --set nodeSelector."nvidia\.com/gpu\.product"=NVIDIA-H100-80GB-HBM3
+```yaml
+# values.yaml, for helm install flappy-kernel deploy/helm/flappy-kernel -f values.yaml
+modelCache: {size: 40Gi}
+tolerations: [{key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}]
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - {key: nvidia.com/gpu.product, operator: In, values: [NVIDIA-H100-80GB-HBM3, NVIDIA-H100-NVL]}
 ```
 
-**Your own image.** To skip the install at every start, or if the pod cannot reach
-GitHub, build the repository's `Dockerfile`, push it to your registry, and install
-with `--set image.repository=<registry>/flappy-kernel --set image.tag=<tag> --set source.url=`.
+**Your own image.** To skip the install at every start, or when the pod cannot reach
+the internet, build the repository's `Dockerfile`, push it to your registry, and install
+with `--set image.repository=<registry>/flappy-kernel --set image.tag=<tag>
+--set source.enabled=false` (and `imagePullSecrets` if the registry needs them).
 
 **Upgrade and remove:** `helm upgrade flappy-kernel deploy/helm/flappy-kernel` restarts
 the pod with the new settings; `helm uninstall flappy-kernel` removes everything the
-chart created.
+chart created except the model volume.
 
 ## Reaching it from elsewhere
 
@@ -115,13 +148,19 @@ access control.
 
 ## Docker
 
+Needs the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+
 ```bash
 docker build -t flappy-kernel .
-docker run --gpus all --shm-size 16g -p 8080:8080 -v hf-cache:/root/.cache/huggingface flappy-kernel
+docker run -d --restart unless-stopped --gpus '"device=0"' --shm-size 16g -p 8080:8080 \
+  -v hf-cache:/root/.cache/huggingface flappy-kernel
 ```
 
 The build runs `deploy/install.sh`, so the image contains Mirage and the compiled
-`kernel/` tools. The `hf-cache` volume keeps the model between runs.
+`kernel/` tools; it needs no GPU. The image is for x86-64 only: on an Apple Silicon Mac,
+build with `docker build --platform linux/amd64` (slow; better on the GPU machine).
+`--gpus '"device=0"'` gives the arcade one whole GPU; `--restart` restarts it if it stops;
+the `hf-cache` volume keeps the model between runs.
 
 ## A plain machine or an existing GPU pod
 
@@ -143,9 +182,11 @@ kubectl exec <pod> -- /root/fk/deploy/serve.sh
 kubectl port-forward pod/<pod> 8080:8080
 ```
 
-`install.sh` options (environment): `MIRAGE` (where Mirage goes, `/root/mirage`),
-`MIRAGE_PREBUILT=0` (always build from source), `RELEASES` (where the prebuilt archive
-is downloaded from), `MAX_JOBS` (parallel compile jobs when building Mirage).
+`install.sh` can run again; an installed Mirage is kept. Its settings (environment):
+`MIRAGE` (where Mirage goes, `/root/mirage`), `MIRAGE_PREBUILT=0` (always build from
+source), `RELEASES` (where the prebuilt archive is downloaded from; the release named
+in `VERSION`), `MAX_JOBS` (parallel compile jobs when building Mirage; by default the
+CPU count, at most one per 4 GB of memory).
 
 ## Check that it works
 
@@ -173,4 +214,8 @@ live training and an LLM answer.
   another origin. Add `--allow-origin https://your.host` (Helm: `serverArgs`; otherwise
   an argument to `serve.sh`).
 - **The pod is never Ready:** `kubectl logs deploy/flappy-kernel` shows which step it is
-  on. Without `modelCache`, every restart downloads the model again.
+  on. A source build of Mirage or a slow model download can outlast
+  `startupTimeoutMinutes`; raise it, set a `modelCache`, or use your own image.
+- **The pod stays Pending:** no node has a free `nvidia.com/gpu` that matches
+  `nodeSelector`/`affinity`, or the GPU nodes' taint is not in `tolerations`
+  (`kubectl describe pod` says which).

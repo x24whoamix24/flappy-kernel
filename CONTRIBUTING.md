@@ -14,8 +14,8 @@ needs, and the rules that are easy to break.
   `kernel/training/` that is the gradient check; for code in a co-tenant block, the
   register, stack and local-memory comparison; for `kernel/game/`, a look at the frames.
   Say in the pull request which you ran and what they showed.
-- **Mirage patch:** a changed `mirage/megakernel.patch` needs a new prebuilt Mirage on
-  the next release (AGENTS.md says how); until then installs build Mirage from source.
+- **Mirage patch:** every release carries a prebuilt Mirage for its patch (AGENTS.md
+  says how); without one, installs build Mirage from source.
 - **Benchmarks:** if a change can affect speed, run the relevant `bench/` script before
   and after, and put the numbers in the pull request.
 

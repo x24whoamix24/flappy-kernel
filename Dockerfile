@@ -16,6 +16,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Mirage at the pinned commit with the patch (prebuilt from the GitHub release when
 # one matches, built from source otherwise; neither needs a GPU), the server's
 # Python packages and the CUDA tools in kernel/.
+COPY VERSION /opt/flappy-kernel/VERSION
 COPY mirage /opt/flappy-kernel/mirage
 COPY deploy/install.sh /opt/flappy-kernel/deploy/install.sh
 COPY server/requirements.txt /opt/flappy-kernel/server/requirements.txt

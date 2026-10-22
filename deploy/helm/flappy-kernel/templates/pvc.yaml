@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+{{- if and .Values.modelCache.size (not .Values.modelCache.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-model-cache
+  labels: {app.kubernetes.io/name: flappy-kernel, app.kubernetes.io/instance: {{ .Release.Name }}}
+  # The model outlives the release, so reinstalling does not download it again.
+  annotations: {helm.sh/resource-policy: keep}
+spec:
+  accessModes: [ReadWriteOnce]
+  {{- with .Values.modelCache.storageClass }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  resources:
+    requests: {storage: {{ .Values.modelCache.size | quote }}}
+{{- end }}

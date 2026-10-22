@@ -8,6 +8,7 @@
 # Mirage comes prebuilt from the GitHub release when one matches this patch,
 # Python, CPU and CUDA version (under a minute); otherwise, or with
 # MIRAGE_PREBUILT=0, it is built from source (about 5 minutes on 64 cores).
+# Running it again is safe: an installed Mirage is kept.
 #
 #   deploy/install.sh                  # from anywhere; Mirage goes to $MIRAGE
 #   deploy/install.sh --package <dir>  # build from source, then write the
@@ -17,7 +18,8 @@ set -euo pipefail
 FK=$(cd "$(dirname "$0")/.." && pwd)
 MIRAGE=${MIRAGE:-/root/mirage}
 MIRAGE_COMMIT=ca58a02d110a278bffaed503be5e66494db2597d
-RELEASES=${RELEASES:-https://github.com/x24whoamix24/flappy-kernel/releases/latest/download}
+# The release of this version carries the prebuilt Mirage for its patch.
+RELEASES=${RELEASES:-https://github.com/x24whoamix24/flappy-kernel/releases/download/v$(cat "$FK/VERSION")}
 PACKAGE_DIR=
 if [ "${1:-}" = --package ]; then
   PACKAGE_DIR=$(mkdir -p "${2:?usage: deploy/install.sh --package <dir>}" && cd "$2" && pwd)
@@ -59,23 +61,40 @@ build_from_source() {
       exit 1
     }
   fi
+  # Each compile job can take a few GB; MAX_JOBS defaults to the CPU count, at
+  # most one job per 4 GB of the memory this container may use.
+  local mem
+  mem=$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo max)
+  [ "$mem" != max ] || mem=$(awk '/MemAvailable/ {print $2 * 1024}' /proc/meminfo)
+  local jobs=$((mem / (4 << 30)))
+  jobs=$((jobs < $(nproc) ? jobs : $(nproc)))
   echo "building Mirage (log: $MIRAGE/build.log)"
-  MAX_JOBS=${MAX_JOBS:-64} pip install -q -e . >"$MIRAGE/build.log" 2>&1
+  MAX_JOBS=${MAX_JOBS:-$((jobs > 0 ? jobs : 1))} pip install -q -e . >"$MIRAGE/build.log" 2>&1
 }
 
 download=$(mktemp -d)
-if download_prebuilt "$download"; then
+if [ "$(cat "$MIRAGE/.prebuilt" 2>/dev/null)" = "$ASSET" ] && [ -z "$PACKAGE_DIR" ]; then
+  echo "Mirage is already installed from $ASSET"
+elif download_prebuilt "$download"; then
   (cd "$download" && echo "$(cut -d' ' -f1 mirage.sha256)  mirage.tar.gz" | sha256sum -c --quiet) || {
     echo "$ASSET does not match its checksum" >&2
     exit 1
   }
-  mkdir -p "$MIRAGE"
-  tar xzf "$download/mirage.tar.gz" -C "$MIRAGE"
+  # Unpacked next to $MIRAGE and moved into place, so a failed unpack leaves
+  # no partial tree behind.
+  rm -rf "$MIRAGE.partial"
+  mkdir -p "$MIRAGE.partial"
+  tar xzf "$download/mirage.tar.gz" -C "$MIRAGE.partial"
+  echo "$ASSET" >"$MIRAGE.partial/.prebuilt"
+  mv "$MIRAGE.partial" "$MIRAGE"
   pip install -q -r "$MIRAGE/requirements.txt"
   # What `pip install -e` would register: the package is imported from the tree,
   # whose include/ and deps/ the megakernel is compiled against.
   echo "$MIRAGE/python" >"$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/mirage.pth"
   echo "installed the prebuilt $ASSET"
+elif [ -e "$MIRAGE" ] && [ ! -d "$MIRAGE/.git" ]; then
+  echo "$MIRAGE is not a Mirage git checkout (another prebuilt version?); remove it or set MIRAGE" >&2
+  exit 1
 else
   build_from_source
 fi

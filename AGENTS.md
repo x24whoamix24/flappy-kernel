@@ -119,11 +119,12 @@ With an H100:
   block must reach the same decision (it is published once, atomically).
 - **The idle online scheduler waits, it does not spin.** Spinning on an empty
   request ring slowed training by about 5%.
-- **A changed patch needs a new prebuilt Mirage.** `deploy/install.sh` names the
-  release archive after the patch's hash, so after a patch change installs build from
-  source until a release carries the new archive. Make it with
-  `deploy/install.sh --package <dir>` in the `pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel`
-  image and attach both files to the release.
+- **Every release carries the prebuilt Mirage.** `deploy/install.sh` downloads it from
+  the release named in `VERSION`, as an archive named after the patch's hash; without
+  it, installs build Mirage from source. A release bumps `VERSION` and the chart's
+  `version`/`appVersion` together (CI checks they match), then attaches the archive and
+  its `.sha256`, made with `deploy/install.sh --package <dir>` in the
+  `pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel` image.
 - **`kLlmMaxTokens` must be at least Mirage's maximum sequence length**
   (`MAX_SEQ`); a `static_assert` checks it when Mirage compiles the kernel.
 

@@ -62,7 +62,9 @@ behind it.
 ## Quick start
 
 You need an NVIDIA **H100 SXM or NVL (132 SMs)** to itself with driver 570 or newer
-(CUDA 12.8), about 25 GB of GPU memory, 64 GB of host RAM and 20 GB of disk for the model.
+(CUDA 12.8), about 25 GB of GPU memory, 64 GB of host RAM and 20 GB of disk for the model;
+on Kubernetes, the NVIDIA device plugin (or GPU Operator), and for Docker, the NVIDIA
+Container Toolkit.
 
 On Kubernetes:
 

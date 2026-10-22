@@ -10,6 +10,6 @@ POD=${1:?usage: deploy/setup_pod.sh <pod>}
 FK=${FK:-/root/fk}
 MIRAGE=${MIRAGE:-/root/mirage}
 kubectl wait --for=condition=Ready "pod/$POD" --timeout=900s
-COPYFILE_DISABLE=1 tar cf - kernel mirage server reference bench deploy |
+COPYFILE_DISABLE=1 tar cf - VERSION kernel mirage server reference bench deploy |
   kubectl exec -i "$POD" -- bash -c "mkdir -p '$FK' && tar xf - -C '$FK'"
 kubectl exec "$POD" -- env MIRAGE="$MIRAGE" bash "$FK/deploy/install.sh"

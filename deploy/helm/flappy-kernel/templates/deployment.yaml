@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # One pod, one container: deploy/serve.sh runs the Mirage megakernel process and
 # the web server side by side; they share memory through /dev/shm.
+{{- if and (not .Values.source.enabled) (eq .Values.image.repository "pytorch/pytorch") }}
+{{- fail "source.enabled=false needs an image built from the repository's Dockerfile (image.repository)" }}
+{{- end }}
+{{- $port := .Values.env.PORT | default "8080" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,11 +21,19 @@ spec:
     metadata:
       labels: {app.kubernetes.io/name: flappy-kernel, app.kubernetes.io/instance: {{ .Release.Name }}}
     spec:
+      # The arcade does not use the Kubernetes API.
+      automountServiceAccountToken: false
       {{- with .Values.runtimeClassName }}
-      runtimeClassName: {{ . }}
+      runtimeClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations: {{- toYaml . | nindent 8 }}
@@ -30,7 +42,7 @@ spec:
       - name: arcade
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.source.url }}
+        {{- if .Values.source.enabled }}
         # Downloads the arcade's source, installs it and serves.
         command:
         - bash
@@ -63,22 +75,25 @@ spec:
         {{- end }}
         {{- end }}
         ports:
-        - {name: http, containerPort: 8080}
+        - {name: http, containerPort: {{ $port }}}
         env:
         - {name: HF_HOME, value: /root/.cache/huggingface}
-        {{- if .Values.source.url }}
-        - {name: SOURCE_URL, value: {{ .Values.source.url | quote }}}
+        {{- if .Values.source.enabled }}
+        - name: SOURCE_URL
+          value: {{ .Values.source.url | default (printf "https://github.com/x24whoamix24/flappy-kernel/archive/refs/tags/v%s.tar.gz" .Chart.AppVersion) | quote }}
         {{- end }}
         {{- range $name, $value := .Values.env }}
         - {name: {{ $name }}, value: {{ $value | quote }}}
         {{- end }}
+        {{- with .Values.extraEnv }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         resources: {{- toYaml .Values.resources | nindent 10 }}
-        # Healthy once frames come from the GPU: install, model download (first
-        # start only) and megakernel compilation take up to ~30 minutes.
+        # Healthy once frames come from the GPU (startupTimeoutMinutes).
         startupProbe:
           httpGet: {path: /healthz, port: http}
           periodSeconds: 10
-          failureThreshold: 180
+          failureThreshold: {{ mul .Values.startupTimeoutMinutes 6 }}
         livenessProbe:
           httpGet: {path: /healthz, port: http}
           periodSeconds: 15
@@ -92,9 +107,11 @@ spec:
       volumes:
       - name: model-cache
         {{- if .Values.modelCache.existingClaim }}
-        persistentVolumeClaim: {claimName: {{ .Values.modelCache.existingClaim }}}
+        persistentVolumeClaim: {claimName: {{ .Values.modelCache.existingClaim | quote }}}
+        {{- else if .Values.modelCache.size }}
+        persistentVolumeClaim: {claimName: {{ printf "%s-model-cache" .Release.Name | quote }}}
         {{- else if .Values.modelCache.hostPath }}
-        hostPath: {path: {{ .Values.modelCache.hostPath }}, type: DirectoryOrCreate}
+        hostPath: {path: {{ .Values.modelCache.hostPath | quote }}, type: DirectoryOrCreate}
         {{- else }}
         emptyDir: {}
         {{- end }}

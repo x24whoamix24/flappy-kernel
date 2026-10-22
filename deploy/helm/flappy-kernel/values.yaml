@@ -1,17 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0
-# Each install runs one arcade on one whole H100 SXM or NVL (132 SMs).
+# Each install runs one arcade on one whole H100 SXM or NVL (132 SMs). The GPU
+# must not be shared: no MIG, time-slicing or MPS (docs/deployment.md).
 
 image:
-  # The stock PyTorch image: at every start the pod downloads the arcade from
-  # source.url and installs it (about a minute; Mirage comes prebuilt from the
-  # release). To run an image built from the repository's Dockerfile instead,
-  # set it here and set source.url to "".
+  # The stock PyTorch image: at every start the pod downloads this chart's
+  # version of the arcade (source) and installs it, with Mirage prebuilt from
+  # the release. To run an image built from the repository's Dockerfile
+  # instead, set it here and set source.enabled to false.
   repository: pytorch/pytorch
   tag: 2.8.0-cuda12.8-cudnn9-devel
   pullPolicy: IfNotPresent
+imagePullSecrets: []
 
 source:
-  url: https://github.com/x24whoamix24/flappy-kernel/archive/refs/tags/v0.2.2.tar.gz
+  enabled: true
+  # Default: the GitHub source archive of v<appVersion>.
+  url: ""
 
 # Environment of deploy/serve.sh (docs/configuration.md lists every setting).
 env:
@@ -19,17 +23,22 @@ env:
   MAX_SEQ: "1024"
   LLM_WORKERS: "96"
   COTENANT_BLOCKS: "32"
+# More environment, in the container's own form, e.g. from a Secret:
+#   - {name: HF_TOKEN, valueFrom: {secretKeyRef: {name: hf, key: token}}}
+extraEnv: []
 
 # Extra arguments for the web server, e.g. when it is served under another
 # origin or behind a reverse proxy:
 #   [--allow-origin, https://arcade.example.com, --trust-proxy]
 serverArgs: []
 
-# Where the model (~16 GB) is kept. With neither set, an emptyDir: every
-# restart downloads it again.
+# Where the model (~16 GB) is kept. With none set, an emptyDir: every new pod
+# downloads it again.
 modelCache:
-  existingClaim: ""  # a PersistentVolumeClaim
-  hostPath: ""       # a directory on the node
+  existingClaim: ""  # an existing PersistentVolumeClaim
+  size: ""           # or create one of this size (e.g. 40Gi), kept on uninstall
+  storageClass: ""   # for the created claim; empty: the cluster's default
+  hostPath: ""       # or a directory on the node
 
 service:
   type: ClusterIP    # LoadBalancer or NodePort to reach it without port-forward
@@ -39,6 +48,12 @@ resources:
   requests: {cpu: "16", memory: 64Gi, nvidia.com/gpu: "1"}
   limits: {memory: 96Gi, nvidia.com/gpu: "1"}
 
-runtimeClassName: ""
-nodeSelector: {}     # e.g. {nvidia.com/gpu.product: NVIDIA-H100-80GB-HBM3}
-tolerations: []
+# How long the pod may take to start serving: the install (about a minute, or
+# 15-30 if Mirage is built from source), the model download on the first
+# start, and compiling the megakernel.
+startupTimeoutMinutes: 60
+
+runtimeClassName: ""  # e.g. nvidia, where the NVIDIA runtime is not the default
+nodeSelector: {}      # e.g. {nvidia.com/gpu.product: NVIDIA-H100-80GB-HBM3}
+affinity: {}
+tolerations: []       # e.g. [{key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}]

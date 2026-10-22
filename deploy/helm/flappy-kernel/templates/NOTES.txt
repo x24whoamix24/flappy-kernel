@@ -1,9 +1,14 @@
-The arcade is starting. The first start installs it, downloads the model and
-compiles the megakernel; follow it with
+The arcade is starting: it installs, downloads the model on the first start and
+compiles the megakernel. Follow it with
 
   kubectl logs -f deploy/{{ .Release.Name }} -n {{ .Release.Namespace }}
 
-It is ready when the pod is Ready. Then open it:
+It is ready when the pod is Ready.
+{{- if eq .Values.service.type "LoadBalancer" }} Its address:
+
+  kubectl get svc {{ .Release.Name }} -n {{ .Release.Namespace }}   # EXTERNAL-IP, port {{ .Values.service.port }}
+{{- else }} Then open it from this machine:
 
   kubectl port-forward svc/{{ .Release.Name }} -n {{ .Release.Namespace }} 8080:{{ .Values.service.port }}
-  open http://localhost:8080
+  # http://localhost:8080
+{{- end }}
