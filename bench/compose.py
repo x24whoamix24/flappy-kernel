@@ -5,19 +5,15 @@ Left: the game exactly as the kernel rendered it. Right: the block layout of the
 launch, live rates for all three workloads, and the LLM's text as it was being
 decoded at that frame.
 
-    python bench/compose.py <run_dir>             # a recorded launch (showcase)
-    python bench/compose.py --race <record_dir>   # a race (bench/race_record.py)
+    python bench/compose.py <run_dir>
 
 A run_dir holds run.json, frames_0.csv (or video_0.csv) and game_0.mp4 from
 COTENANT_OUT; the text comes from the per-frame decode step the kernel logged.
-A record_dir holds the race's frames and the server's numbers at each frame.
 """
 import argparse
 import csv
-import glob
 import json
 import os
-import re
 import subprocess
 import textwrap
 
@@ -38,7 +34,6 @@ WRAP = 92  # characters per line of LLM output
 BG = (16, 18, 24)
 FG = (232, 234, 240)
 DIM = (140, 146, 160)
-PROMPT = (246, 201, 69)
 ROLE = {
     "llm": (86, 156, 255),
     "sched": (120, 124, 136),
@@ -62,10 +57,10 @@ def wrap(text):
     return lines
 
 
-def draw(game, a, f, cols, header, lines, prompt=None):
+def draw(game, a, f, cols, header, lines):
     """One output frame: `game` (GW x GH) on the left; on the right the block
     map, `cols` of (heading, colour, [(value, label)]), and the LLM's text
-    under `header`, its question first if given."""
+    under `header`."""
     img = Image.new("RGB", (W, H), BG)
     img.paste(game.resize((LEFT, H), Image.NEAREST), (0, 0))
     d = ImageDraw.Draw(img)
@@ -107,11 +102,6 @@ def draw(game, a, f, cols, header, lines, prompt=None):
     # The LLM's output so far, its newest lines.
     d.text((X0, y), header, font=f["head"], fill=ROLE["llm"])
     y += 30
-    if prompt:
-        for line in wrap("> " + prompt):
-            d.text((X0, y), line, font=f["mono"], fill=PROMPT)
-            y += 19
-        y += 8
     max_lines = (H - y - 14) // 19
     for k, line in enumerate(lines[-max_lines:]):
         d.text((X0, y + k * 19), line, font=f["mono"], fill=FG)
@@ -183,56 +173,9 @@ def compose_run(a, f):
     print(f"wrote {out} ({written} frames)")
 
 
-def compose_race(a, f):
-    frames = sorted(glob.glob(f"{a.source}/f*.jpg"))
-    states = [json.loads(line) for line in open(f"{a.source}/states.jsonl")]
-    steps_per_update = (a.cotenant - 1) * STEPS_PER_LEARNER_UPDATE
-    out = a.out or f"{a.source}/race.mp4"
-    enc = encode(out)
-    times = [s["t"] for s in states]
-    shown = {}  # the newest answer: the server stops reporting it once finished
-    for i, (path, s) in enumerate(zip(frames, states)):
-        stats, me = s.get("stats", {}), s.get("me", {})
-        if (s.get("llm") or {}).get("prompt"):
-            shown = s["llm"]
-        elif s.get("answer") and s["answer"].get("prompt") == shown.get("prompt"):
-            shown = {**shown, "text": s["answer"]["text"]}
-        llm = shown
-        # Frames per second over the last second of recording.
-        j = i
-        while j > 0 and times[i] - times[j - 1] <= 1.0:
-            j -= 1
-        fps = (i - j) / (times[i] - times[j]) if times[i] > times[j] else 0.0
-        cols = [
-            ("INFERENCE  Qwen3-8B", ROLE["llm"], [
-                (f"{stats.get('tok_s', 0):.0f}", "tokens / s"),
-                (f"{llm.get('tokens', 0)}", "tokens generated"),
-            ]),
-            ("TRAINING  A2C policy", ROLE["train"], [
-                (f"{stats.get('upd_s', 0):.0f}", "training steps / s"),
-                (f"{stats.get('upd_s', 0) * steps_per_update / 1e6:.0f}M", "game steps simulated / s"),
-                (f"{s.get('train_mean', 0):.0f}", "pipes per practice game"),
-            ]),
-            ("GAME  Flappy Kernel", ROLE["game"], [
-                (f"{fps:.0f}", "frames / s"),
-                (f"{me.get('you_score', 0)}", "score"),
-                (f"{max(stats.get('best_human', 0), me.get('you_score', 0))}", "best"),
-            ]),
-        ]
-        # Markdown emphasis markers read as noise in plain text.
-        text = re.sub(r"\*\*|__", "", llm.get("text", ""))
-        header = f"LLM output (decoded inside the same kernel)   t = {s['t']:5.1f} s"
-        img = draw(Image.open(path).convert("RGB"), a, f, cols, header, wrap(text), llm.get("prompt"))
-        enc.stdin.write(img.tobytes())
-    enc.stdin.close()
-    enc.wait()
-    print(f"wrote {out} ({min(len(frames), len(states))} frames)")
-
-
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("source", help="a launch's run_dir, or with --race a race_record.py directory")
-    ap.add_argument("--race", action="store_true")
+    ap.add_argument("source", help="the launch's run_dir")
     ap.add_argument("--model", default="Qwen/Qwen3-8B")
     ap.add_argument("--workers", type=int, default=96)
     ap.add_argument("--sched-blocks", type=int, default=4)
@@ -241,7 +184,7 @@ def main():
     ap.add_argument("--fonts", default=FONT_DIR, help="directory with the DejaVu TTF fonts")
     a = ap.parse_args()
     f = load_fonts(a.fonts)
-    (compose_race if a.race else compose_run)(a, f)
+    compose_run(a, f)
 
 
 if __name__ == "__main__":

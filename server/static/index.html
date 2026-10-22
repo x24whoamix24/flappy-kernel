@@ -77,7 +77,7 @@ form { display: flex; gap: 8px; }
 input[type=text] { flex: 1; min-width: 0; font: 16px var(--body); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; }
 input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 1px; }
 .out .note { text-align: left; }
-.feed { display: grid; gap: 16px; max-height: 420px; overflow-y: auto; font: 14px/1.45 var(--mono); }
+.feed { position: relative; display: grid; gap: 16px; max-height: 420px; overflow-y: auto; font: 14px/1.45 var(--mono); }
 .msg { display: grid; gap: 4px; }
 .msg .who { font-size: 0.78rem; color: var(--dim); }
 .msg .q { color: var(--prompt); }
@@ -87,6 +87,17 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
 .msg .a strong { color: var(--fg); font-weight: 700; }
 .msg .a code { background: rgba(255, 255, 255, 0.06); border-radius: 3px; padding: 0 3px; }
 
+/* Desktop: one screen, like a cabinet. The game takes the window's height,
+   the panel matches it, and only the LLM output scrolls. */
+@media (min-width: 861px) {
+  html, body { height: 100%; overflow: hidden; }
+  .cab { height: 100dvh; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+  canvas { width: min(450px, calc((100dvh - 150px) * 0.5625)); }
+  .screen { align-content: start; }
+  .side { grid-template-rows: auto auto auto auto minmax(0, 1fr); min-height: 0; }
+  .out { grid-template-rows: auto auto auto minmax(0, 1fr); min-height: 0; }
+  .feed { max-height: none; min-height: 0; padding-right: 6px; }
+}
 @media (max-width: 860px) {
   .cab { grid-template-columns: minmax(0, 1fr); gap: 16px;
     padding-top: max(10px, env(safe-area-inset-top, 0px)); padding-bottom: max(24px, env(safe-area-inset-bottom, 0px)); }
@@ -262,8 +273,9 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
     lastFeed = key;
     var feed = $("feed");
     feed.textContent = "";
+    var live = null;
     if (llm) {
-      var live = el("div", "msg now");
+      live = el("div", "msg now");
       live.appendChild(el("span", "who", "Answering · decoding now"));
       live.appendChild(el("span", "q", llm.prompt));
       live.appendChild(richText(llm.text || "…"));
@@ -277,6 +289,8 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
       m.appendChild(richText(h.text));
       feed.appendChild(m);
     });
+    // While an answer is decoded, follow its newest line, like a terminal.
+    if (live) feed.scrollTop = Math.max(0, live.offsetTop + live.offsetHeight - feed.clientHeight);
   }
 
   function onState(s) {

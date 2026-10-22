@@ -22,8 +22,8 @@ position), `train.csv` and `game.log` (separate trainer and game processes).
 | 112 workers: invalid TMA descriptor without co-tenants | `sweep_llm_w112/` (failed run, kept as evidence) |
 | Single launch, nothing overlapping it | `nsys/gpu_trace_summary.csv`: one kernel or copy group per row, with how many of its launches overlap `persistent_kernel` (all 0) |
 
-`docs/media/race.gif` is a race recorded next to a running arcade with
-`bench/race_record.py` and laid out by `bench/compose.py --race`.
+`docs/media/race.gif` is the arcade page during a race, recorded next to a
+running arcade with `bench/race_page.py`.
 `video_2026-10-22/` holds a showcase recording (`showcase/`: single-kernel
 megakernel, 11.35 ms/token; `bench/compose.py` lays it out) and the runs behind
 `docs/media/comparison.mp4` (`cmp_*/` and `compare.json`); its numbers match the
