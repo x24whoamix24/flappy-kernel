@@ -1,0 +1,1543 @@
+Input arguments: Namespace(use_mirage=True, max_num_batched_tokens=8, max_num_batched_requests=1, page_size=4096, kv_budget=None, max_num_pages=16, output_dir=None, trace_name='', profiling=False, spec_decode=None, ngram_size=3, max_seq_length=1024, spec_length=3, model_path=None, model='Qwen/Qwen3-8B', use_cutlass_kernel=True, ignore_eos=True, max_new_tokens=None, temperature=0.0, top_p=1.0, do_sample=False, top_k=0, seed=42, sampling_topk_max=32, save_tokens=None, prompt='Give me a short introduction to large language model.', split_kv_cache=False)
+world_size(1) rank(0)
+KV page: 16.00 MiB x 36 slot(s) = 576.00 MiB per page id  (anchor 'attention')
+  group 0 'attention': block 4096 tokens (4096 entries, tile 64 device default)
+KV pool: 16 pages x 576.00 MiB = 9.00 GiB  (explicit page count; device has 78.66 GiB free of 79.18 GiB)
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:01<00:04,  1.12s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:02<00:02,  1.01it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:02<00:01,  1.09it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:03<00:00,  1.23it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.62it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.33it/s]
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_sparse_mma_warpspecialized.hpp(902): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_warpspecialized.hpp(717): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp(716): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_mixed_tma_cpasync_warpspecialized.hpp(554): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_warpspecialized.hpp(682): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(params.layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp(810): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(958): warning #177-D: variable "num_schedulers" was declared but never referenced
+    int const num_schedulers =
+              ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(960): warning #177-D: variable "num_schedulers_per_sm" was declared but never referenced
+    int const num_schedulers_per_sm = SCHEDULERS_PER_BLOCK;
+              ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1148): warning #177-D: variable "_trace_t" was declared but never referenced
+        bool _trace_t =
+             ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(984): warning #20054-D: dynamic initialization is not supported for a function-scope static __shared__ variable within a __device__/__global__ function
+    __attribute__((shared)) TaskDesc task_descs[TASK_DESCS_BUFFER_LENGTH];
+                                     ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1668): warning #177-D: variable "expected_num_meta" was declared but never referenced
+    size_t expected_num_meta = 7 + 1 * 4;
+           ^
+
+ptxas info    : (C7510) Potential Performance Loss: wgmma.mma_async instructions are serialized due to wgmma pipeline crossing function boundary at a function call in the function '_Z17persistent_kernelN6mirage7runtime13RuntimeConfigE'
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b000ab6 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b000ab6 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b000ab6
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00156c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00156c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00156c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b002022 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b002022 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b002022
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b002ad8 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b002ad8 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b002ad8
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00358e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00358e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00358e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b004044 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b004044 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b004044
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b004afa dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b004afa not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b004afa
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b006066 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b006066 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b006066
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b006b1c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b006b1c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b006b1c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0075d2 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0075d2 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0075d2
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b008088 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b008088 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b008088
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b008b3e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b008b3e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b008b3e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0095f4 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0095f4 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0095f4
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00a0aa dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00a0aa not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00a0aa
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00b616 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00b616 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00b616
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00c0cc dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00c0cc not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00c0cc
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00cb82 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00cb82 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00cb82
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00d638 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00d638 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00d638
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00e0ee dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00e0ee not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00e0ee
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00eba4 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00eba4 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00eba4
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b00f65a dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b00f65a not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b00f65a
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b010bc6 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b010bc6 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b010bc6
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01167c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01167c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01167c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b012132 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b012132 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b012132
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b012be8 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b012be8 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b012be8
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01369e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01369e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01369e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b014154 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b014154 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b014154
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b014c0a dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b014c0a not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b014c0a
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b016176 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b016176 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b016176
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b016c2c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b016c2c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b016c2c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0176e2 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0176e2 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0176e2
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b018198 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b018198 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b018198
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b018c4e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b018c4e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b018c4e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b019704 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b019704 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b019704
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01a1ba dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01a1ba not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01a1ba
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01b726 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01b726 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01b726
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01c1dc dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01c1dc not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01c1dc
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01cc92 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01cc92 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01cc92
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01d748 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01d748 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01d748
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01e1fe dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01e1fe not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01e1fe
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01ecb4 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01ecb4 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01ecb4
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b01f76a dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b01f76a not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b01f76a
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b020cd6 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b020cd6 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b020cd6
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02178c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02178c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02178c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b022242 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b022242 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b022242
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b022cf8 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b022cf8 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b022cf8
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0237ae dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0237ae not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0237ae
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b024264 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b024264 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b024264
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b024d1a dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b024d1a not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b024d1a
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b026286 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b026286 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b026286
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b026d3c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b026d3c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b026d3c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0277f2 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0277f2 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0277f2
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0282a8 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0282a8 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0282a8
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b028d5e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b028d5e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b028d5e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b029814 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b029814 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b029814
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02a2ca dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02a2ca not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02a2ca
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02b836 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02b836 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02b836
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02c2ec dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02c2ec not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02c2ec
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02cda2 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02cda2 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02cda2
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02d858 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02d858 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02d858
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02e30e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02e30e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02e30e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02edc4 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02edc4 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02edc4
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b02f87a dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b02f87a not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b02f87a
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b030de6 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b030de6 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b030de6
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03189c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03189c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03189c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b032352 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b032352 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b032352
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b032e08 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b032e08 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b032e08
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0338be dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0338be not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0338be
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b034374 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b034374 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b034374
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b034e2a dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b034e2a not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b034e2a
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b036396 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b036396 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b036396
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b036e4c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b036e4c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b036e4c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b037902 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b037902 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b037902
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0383b8 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0383b8 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0383b8
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b038e6e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b038e6e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b038e6e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b039924 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b039924 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b039924
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03a3da dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03a3da not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03a3da
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03b946 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03b946 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03b946
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03c3fc dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03c3fc not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03c3fc
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03ceb2 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03ceb2 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03ceb2
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03d968 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03d968 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03d968
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03e41e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03e41e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03e41e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03eed4 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03eed4 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03eed4
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b03f98a dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b03f98a not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b03f98a
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b040ef6 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b040ef6 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b040ef6
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0419ac dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0419ac not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0419ac
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b042462 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b042462 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b042462
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b042f18 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b042f18 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b042f18
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0439ce dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0439ce not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0439ce
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b044484 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b044484 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b044484
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b044f3a dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b044f3a not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b044f3a
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0464a6 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0464a6 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0464a6
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b046f5c dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b046f5c not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b046f5c
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b047a12 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b047a12 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b047a12
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b0484c8 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b0484c8 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b0484c8
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b048f7e dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b048f7e not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b048f7e
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b049a34 dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b049a34 not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b049a34
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[TMA ALIGN] task_type=155 param=2 base=0x7f2a7b04a4ea dims=[8,1371,1]
+WARN: TMA addr 0x7f2a7b04a4ea not 16B-aligned
+TMA Desc Addr:   0x7ffc176fb408
+format         9
+dim            5
+gmem_address   0x7f2a7b04a4ea
+globalDim      0x7ffc176fb460
+globalStrides  0x7ffc176fb490
+boxDim         0x7ffc176fb420
+elementStrides 0x7ffc176fb440
+interleave     0
+swizzle        3
+l2Promotion    2
+oobFill        0
+Error in tile TMA descriptor creation: invalid argument
+[MPK INIT] Total tasks: 14348, Total events: 2350
+sm_cnt:  132
+Compiling megakernel using the following command line:
+['/usr/local/cuda/bin/nvcc', '/tmp/tmpe8gu6tfz/test.cu', '-O3', '-lineinfo', '-I/opt/conda/include/python3.11', '-I/root/mirage/python/mirage/../../include', '-I/root/mirage/python/mirage/../../include/mirage/persistent_kernel', '-I/root/mirage/python/mirage/../../deps/cutlass/include', '-I/root/mirage/python/mirage/../../deps/cutlass/tools/util/include', '-I/root/mirage/python/mirage/../../deps/json/include', '-DMAX_WORKER_PER_SCHEDULER=8', '-DMIRAGE_USE_CUTLASS_KERNEL=1', '-gencode=arch=compute_90a,code=sm_90a', '-DMPK_ENABLE_TMA', '-DMIRAGE_GRACE_HOPPER', '-DNDEBUG', '-shared', '-std=c++20', '-rdc=false', '-use_fast_math', '-lcuda', '-lcudart', '-lstdc++fs', '-Xcompiler=-fPIC', '--expt-relaxed-constexpr', '-o', '/tmp/tmpe8gu6tfz/test.cpython-311-x86_64-linux-gnu.so', '-DMPK_TARGET_CC=90', '-DMIRAGE_BACKEND_USE_CUDA', '-DMODE_OFFLINE', '-DMPK_MAX_NUM_BATCHED_REQUESTS=1', '-DMPK_MAX_NUM_BATCHED_TOKENS=8', '-DMPK_MAX_TOKENS_PER_REQUEST=8', '-DMPK_MAX_NUM_PAGES=16', '-DMPK_NUM_KV_GROUPS=1', '-DMPK_MAX_SEQ_LENGTH=1024']
+Finished megakernel compilation...
+a single persistent kernel
+CUDA kernel launch error: an illegal instruction was encountered
+Finished Launch Persistent Kernel (116 blocks)
+Traceback (most recent call last):
+  File "/root/mirage/demo/qwen3/demo.py", line 951, in <module>
+    ender.record()
+  File "/opt/conda/lib/python3.11/site-packages/torch/cuda/streams.py", line 191, in record
+    super().record(stream)
+torch.AcceleratorError: CUDA error: an illegal instruction was encountered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+

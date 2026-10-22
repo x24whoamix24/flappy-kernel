@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+.git
+.claude
+node_modules
+results
+docs
+tests
+bench
+reference
+kernel/standalone
+kernel/separate
+server/layout.json
+**/__pycache__

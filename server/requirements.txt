@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+aiohttp==3.12.15
+numpy
+pillow
+transformers==4.57.1

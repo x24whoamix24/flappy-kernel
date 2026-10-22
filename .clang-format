@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+# Mirage's style, so the patch and the co-tenant code read alike.
+BasedOnStyle: LLVM
+ColumnLimit: 80
+BinPackParameters: false
+BinPackArguments: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+InsertBraces: true

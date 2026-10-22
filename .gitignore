@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: Apache-2.0
+# Build outputs
+kernel/standalone
+kernel/separate
+*.o
+*.cubin
+*.ptx
+__pycache__/
+*.pyc
+
+# Generated at runtime
+server/layout.json
+tests/screenshots/
+*.tmp
+
+# Local tooling
+node_modules/
+.venv/
+venv/
+.vscode/
+.idea/
+.claude/
+.DS_Store
+
+# Credentials and cluster configs never belong in the repository
+.env
+.env.*
+*.pem
+*.key
+kubeconfig*
+*.kubeconfig

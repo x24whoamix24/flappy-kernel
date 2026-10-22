@@ -1,0 +1,2 @@
+frame,host_ns,wall_ns,gpu_ns,decode_step,updates,episodes,train_mean,train_best,game_score,game_best,game_deaths
+1,43242142,1792666389186359835,1792666389155630464,2047,1,0,0.000,0.0,0,0,0

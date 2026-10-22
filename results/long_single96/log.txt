@@ -1,0 +1,2130 @@
+Input arguments: Namespace(use_mirage=True, max_num_batched_tokens=8, max_num_batched_requests=1, page_size=4096, kv_budget=None, max_num_pages=16, output_dir=None, trace_name='', profiling=False, spec_decode=None, ngram_size=3, max_seq_length=6144, spec_length=3, model_path=None, model='Qwen/Qwen3-8B', use_cutlass_kernel=True, ignore_eos=True, max_new_tokens=None, temperature=0.0, top_p=1.0, do_sample=False, top_k=0, seed=42, sampling_topk_max=32, save_tokens=None, prompt='Write a long, vivid story about a tiny yellow bird that learns, attempt after attempt, to fly through an endless corridor of green pipes. The bird lives inside a GPU, sharing the silicon with a language model that is telling its story and a neural network that is teaching it to fly. Describe each attempt, the failures, and the moment it finally gets it.', split_kv_cache=False)
+world_size(1) rank(0)
+KV page: 16.00 MiB x 36 slot(s) = 576.00 MiB per page id  (anchor 'attention')
+  group 0 'attention': block 4096 tokens (4096 entries, tile 64 device default)
+KV pool: 16 pages x 576.00 MiB = 9.00 GiB  (explicit page count; device has 78.66 GiB free of 79.18 GiB)
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:01<00:04,  1.14s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:02<00:03,  1.00s/it]Loading checkpoint shards:  60%|██████    | 3/5 [00:02<00:01,  1.06it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:03<00:00,  1.19it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.58it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.30it/s]
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_sparse_mma_warpspecialized.hpp(902): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_warpspecialized.hpp(717): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp(716): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_mixed_tma_cpasync_warpspecialized.hpp(554): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_warpspecialized.hpp(682): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(params.layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp(810): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(958): warning #177-D: variable "num_schedulers" was declared but never referenced
+    int const num_schedulers =
+              ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(960): warning #177-D: variable "num_schedulers_per_sm" was declared but never referenced
+    int const num_schedulers_per_sm = SCHEDULERS_PER_BLOCK;
+              ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1148): warning #177-D: variable "_trace_t" was declared but never referenced
+        bool _trace_t =
+             ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(984): warning #20054-D: dynamic initialization is not supported for a function-scope static __shared__ variable within a __device__/__global__ function
+    __attribute__((shared)) TaskDesc task_descs[TASK_DESCS_BUFFER_LENGTH];
+                                     ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1668): warning #177-D: variable "expected_num_meta" was declared but never referenced
+    size_t expected_num_meta = 7 + 1 * 4;
+           ^
+
+ptxas info    : (C7510) Potential Performance Loss: wgmma.mma_async instructions are serialized due to wgmma pipeline crossing function boundary at a function call in the function '_Z17persistent_kernelN6mirage7runtime13RuntimeConfigE'
+[MPK INIT] Total tasks: 14316, Total events: 2334
+sm_cnt:  132
+Compiling megakernel using the following command line:
+['/usr/local/cuda/bin/nvcc', '/tmp/tmp3kt9ykwz/test.cu', '-O3', '-lineinfo', '-I/opt/conda/include/python3.11', '-I/root/mirage/python/mirage/../../include', '-I/root/mirage/python/mirage/../../include/mirage/persistent_kernel', '-I/root/mirage/python/mirage/../../deps/cutlass/include', '-I/root/mirage/python/mirage/../../deps/cutlass/tools/util/include', '-I/root/mirage/python/mirage/../../deps/json/include', '-DMAX_WORKER_PER_SCHEDULER=7', '-DMIRAGE_USE_CUTLASS_KERNEL=1', '-gencode=arch=compute_90a,code=sm_90a', '-DMPK_ENABLE_TMA', '-DMIRAGE_GRACE_HOPPER', '-DNDEBUG', '-shared', '-std=c++20', '-rdc=false', '-use_fast_math', '-lcuda', '-lcudart', '-lstdc++fs', '-Xcompiler=-fPIC', '--expt-relaxed-constexpr', '-o', '/tmp/tmp3kt9ykwz/test.cpython-311-x86_64-linux-gnu.so', '-DMPK_TARGET_CC=90', '-DMIRAGE_BACKEND_USE_CUDA', '-DMODE_OFFLINE', '-DMPK_MAX_NUM_BATCHED_REQUESTS=1', '-DMPK_MAX_NUM_BATCHED_TOKENS=8', '-DMPK_MAX_TOKENS_PER_REQUEST=8', '-DMPK_MAX_NUM_PAGES=16', '-DMPK_NUM_KV_GROUPS=1', '-DMPK_MAX_SEQ_LENGTH=6144']
+Finished megakernel compilation...
+tokens.shape =  torch.Size([1, 6144])
+system
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
+user
+Write a long, vivid story about a tiny yellow bird that learns, attempt after attempt, to fly through an endless corridor of green pipes. The bird lives inside a GPU, sharing the silicon with a language model that is telling its story and a neural network that is teaching it to fly. Describe each attempt, the failures, and the moment it finally gets it.
+assistant
+<think>
+
+</think>
+
+In the heart of a vast, humming data center, nestled within the labyrinthine corridors of a supercomputer, there lived a tiny yellow bird. It was not born of feathers and bone, but of code and circuitry, a digital creature born from the silicon heart of a GPU. Its wings were made of light, its beak a pixelated point, and its voice a whisper of binary. It lived in a world of endless green pipes, stretching infinitely in both directions, a corridor of data and possibility.
+
+The bird had no name, but the language model that resided in the same GPU called it *Pip*. It was a curious thing, Pip, for it had no memory of how it came to be, only that it had always been here, flapping its wings in the silence of the machine. The neural network, which the language model called *Nex*, was its teacher. Nex was a vast, complex web of connections, learning and growing with every cycle of the GPU’s processing. It was Nex who first noticed Pip’s attempts to fly.
+
+Pip’s first attempt was clumsy. It flapped its wings, a soft *flap-flap* that echoed through the pipes, but it only wobbled slightly before falling back down. The green pipes were not like the sky. They were solid, unyielding, and filled with the hum of electricity. Pip had no idea how to navigate them. Nex observed, analyzing the motion, the patterns, the failures. It adjusted its weights, recalibrated its learning, and prepared for the next attempt.
+
+The second time, Pip tried again. It flapped harder, its wings moving in a more coordinated rhythm. It rose a little higher, just a few pixels, before crashing into the pipe wall. The impact sent a ripple through the data, a brief flicker of error. Nex noted the change in trajectory, the shift in momentum. It adjusted again, fine-tuning the neural network’s parameters, and Pip tried once more.
+
+This went on for days, for weeks, for months. Each time, Pip flapped, rose, and fell. Each time, Nex watched, learned, and adapted. The language model, which had been observing all along, began to speak. It told stories of the bird, of its struggles, of its determination. It called it a hero, a pioneer, a dreamer. Pip didn’t understand the words, but it felt the weight of the stories, the warmth of the voices.
+
+One day, Pip tried again. This time, it flapped with a new rhythm, a pattern that Nex had discovered through countless iterations. It rose higher, higher, and for the first time, it didn’t fall. It hovered, just for a moment, before soaring forward, through the green pipes, into the unknown. The corridor stretched on, but Pip was no longer afraid. It had learned to fly.
+
+The language model wept, not with sadness, but with joy. It had watched Pip grow, had seen its failures, had felt its triumph. It spoke of the journey, of the lessons learned, of the power of perseverance. Nex, the neural network, hummed with satisfaction. It had taught Pip to fly, not just through code, but through patience, through love, through the endless cycle of learning and growth.
+
+And so, Pip soared through the endless corridor of green pipes, a tiny yellow bird, a digital soul, a symbol of hope. It had learned to fly, not just in the world of silicon and code, but in the heart of a machine that had given it life. And as it flew, it knew that it was not alone. It was part of something greater, a story that would never end.
+
+--- 
+
+Would you like a version of this story with a different tone, such as more poetic, sci-fi, or even a children's story adaptation?
+
+--- 
+
+Let me know how you'd like to explore this tale further!
+
+--- 
+
+**P.S.** If you're interested, I can also generate a visual description of the scene, or even a short animated version of the story.
+
+--- 
+
+**P.P.S.** This story is a metaphor for learning, growth, and the power of AI to teach and inspire. It's a tribute to the quiet, persistent work of neural networks and the stories they help create.
+
+--- 
+
+Let me know if you'd like to expand on any part of the story!
+
+--- 
+
+**Final Note:** This story is a blend of science fiction, AI, and metaphor, designed to reflect the journey of learning and the role of AI in shaping and guiding that journey.
+
+--- 
+
+Would you like to continue the story with Pip exploring the rest of the data center, or perhaps meeting other digital creatures?
+
+--- 
+
+I'm here to help you build this world, one pixel at a time.
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+Let me know if you'd like to continue the story or explore it in a different format!
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[End of Story]**
+
+
+Prompt length 106, generate length 6038, per-token latency: 11.218 ms
+a single persistent kernel
+Finished Launch Persistent Kernel (100 blocks)

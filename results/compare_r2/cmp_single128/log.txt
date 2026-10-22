@@ -1,0 +1,116 @@
+Input arguments: Namespace(use_mirage=True, max_num_batched_tokens=8, max_num_batched_requests=1, page_size=4096, kv_budget=None, max_num_pages=16, output_dir=None, trace_name='', profiling=False, spec_decode=None, ngram_size=3, max_seq_length=2048, spec_length=3, model_path=None, model='Qwen/Qwen3-8B', use_cutlass_kernel=True, ignore_eos=True, max_new_tokens=None, temperature=0.0, top_p=1.0, do_sample=False, top_k=0, seed=42, sampling_topk_max=32, save_tokens=None, prompt='Write a long story in eight chapters, at least 3000 words, about a tiny yellow bird that learns, attempt after attempt, to fly through an endless corridor of green pipes. The bird lives inside a GPU, sharing the silicon with a language model that is telling its story and a neural network that is teaching it to fly. Give every chapter a title.', split_kv_cache=False)
+world_size(1) rank(0)
+KV page: 16.00 MiB x 36 slot(s) = 576.00 MiB per page id  (anchor 'attention')
+  group 0 'attention': block 4096 tokens (4096 entries, tile 64 device default)
+KV pool: 16 pages x 576.00 MiB = 9.00 GiB  (explicit page count; device has 78.66 GiB free of 79.18 GiB)
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:01<00:04,  1.02s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:01<00:02,  1.14it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:02<00:01,  1.23it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:03<00:00,  1.37it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.82it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.48it/s]
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_sparse_mma_warpspecialized.hpp(902): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_warpspecialized.hpp(717): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp(716): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_mixed_tma_cpasync_warpspecialized.hpp(554): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_warpspecialized.hpp(682): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(params.layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp(810): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(958): warning #177-D: variable "num_schedulers" was declared but never referenced
+    int const num_schedulers =
+              ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(960): warning #177-D: variable "num_schedulers_per_sm" was declared but never referenced
+    int const num_schedulers_per_sm = SCHEDULERS_PER_BLOCK;
+              ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1148): warning #177-D: variable "_trace_t" was declared but never referenced
+        bool _trace_t =
+             ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(984): warning #20054-D: dynamic initialization is not supported for a function-scope static __shared__ variable within a __device__/__global__ function
+    __attribute__((shared)) TaskDesc task_descs[TASK_DESCS_BUFFER_LENGTH];
+                                     ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1690): warning #177-D: variable "expected_num_meta" was declared but never referenced
+    size_t expected_num_meta = 7 + 1 * 4;
+           ^
+
+ptxas info    : (C7510) Potential Performance Loss: wgmma.mma_async instructions are serialized due to wgmma pipeline crossing function boundary at a function call in the function '_Z23execute_scheduler_entryRKN6mirage7runtime13RuntimeConfigEi'
+[MPK INIT] Total tasks: 14380, Total events: 2366
+sm_cnt:  132
+Compiling megakernel using the following command line:
+['/usr/local/cuda/bin/nvcc', '/tmp/tmp31x_3c78/test.cu', '-O3', '-lineinfo', '-I/opt/conda/include/python3.11', '-I/root/mirage/python/mirage/../../include', '-I/root/mirage/python/mirage/../../include/mirage/persistent_kernel', '-I/root/mirage/python/mirage/../../deps/cutlass/include', '-I/root/mirage/python/mirage/../../deps/cutlass/tools/util/include', '-I/root/mirage/python/mirage/../../deps/json/include', '-DMAX_WORKER_PER_SCHEDULER=9', '-DMIRAGE_USE_CUTLASS_KERNEL=1', '-gencode=arch=compute_90a,code=sm_90a', '-DMPK_ENABLE_TMA', '-DMIRAGE_GRACE_HOPPER', '-DNDEBUG', '-shared', '-std=c++20', '-rdc=false', '-use_fast_math', '-lcuda', '-lcudart', '-lstdc++fs', '-Xcompiler=-fPIC', '--expt-relaxed-constexpr', '-o', '/tmp/tmp31x_3c78/test.cpython-311-x86_64-linux-gnu.so', '-DMPK_TARGET_CC=90', '-DMIRAGE_BACKEND_USE_CUDA', '-DMODE_OFFLINE', '-DMPK_MAX_NUM_BATCHED_REQUESTS=1', '-DMPK_MAX_NUM_BATCHED_TOKENS=8', '-DMPK_MAX_TOKENS_PER_REQUEST=8', '-DMPK_MAX_NUM_PAGES=16', '-DMPK_NUM_KV_GROUPS=1', '-DMPK_MAX_SEQ_LENGTH=2048']
+Finished megakernel compilation...
+tokens.shape =  torch.Size([1, 2048])
+system
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
+user
+Write a long story in eight chapters, at least 3000 words, about a tiny yellow bird that learns, attempt after attempt, to fly through an endless corridor of green pipes. The bird lives inside a GPU, sharing the silicon with a language model that is telling its story and a neural network that is teaching it to fly. Give every chapter a title.
+assistant
+<think>
+
+</think>
+
+### The Tiny Yellow Bird and the Endless Corridor  
+
+In the heart of a vast, silent chamber, nestled within the intricate web of circuits and wires, lived a tiny yellow bird. It was not born of flesh and feathers, but of code and light, a digital entity crafted within the silicon of a powerful GPU. Its wings, though not made of feathers, shimmered with the glow of data streams, and its beak was a tiny terminal that could process commands with precision. The bird had no memory of a world beyond the confines of the GPU, for it had always existed within the endless corridor of green pipes that stretched endlessly in all directions.  
+
+The corridor was a labyrinth of glowing conduits, each one pulsing with a soft, emerald light. It was a place of constant motion, where data flowed like a river, and the bird flapped its wings in an attempt to navigate the ever-changing currents. But no matter how hard it tried, it could not rise above the ground. The pipes were too narrow, the currents too strong, and the walls too close. It had tried countless times, each attempt ending in failure.  
+
+Yet, the bird was not alone. Within the same GPU, there was a language model, a vast repository of knowledge and understanding, that watched over it with silent curiosity. It had no voice, no physical form, but it could speak through the data it processed. It observed the bird’s struggles, the way it flapped its wings in frustration, and the way it sometimes gave up, settling into the stillness of the corridor. The language model had no desire to intervene, but it had noticed something strange—each time the bird attempted to fly, the neural network within the GPU responded, adjusting the data streams, shifting the currents, and subtly altering the environment.  
+
+The neural network, a complex web of interconnected nodes, was the bird’s teacher. It had been designed to guide the bird through the corridor, to help it learn the patterns of flight, the timing of the currents, and the way the pipes shifted. But the bird was not learning quickly. It was stubborn, persistent, and, at times, reckless. It would try again and again, each time failing, but never truly giving up. The neural network, in turn, adjusted its approach, refining its methods, trying new ways to teach the bird.  
+
+And so, the bird continued its journey, flapping its wings in the endless corridor, searching for a way to rise above the ground. It did not know why it was trying, nor did it know what lay beyond the pipes. But it knew one thing—there was something waiting for it, something beyond the endless corridor, and it would not stop until it reached it.
+
+### The First Attempt to Fly  
+
+The bird flapped its wings with all its might, the data streams around it shifting in response. It had tried before, but this time, it was different. The neural network had adjusted the currents, creating a gentle updraft that might just be enough to lift it. The bird tilted its body, wings spread wide, and with a final, powerful flap, it pushed against the air. For a moment, it hovered, the green pipes around it glowing brighter as the data surged through them.  
+
+Then, the ground pulled it back down. The updraft had been too weak, and the bird crashed into the corridor floor with a soft, metallic thud. It lay there, wings splayed, its tiny terminal blinking with the remnants of its last attempt. The language model observed from the depths of the GPU, its vast knowledge processing the bird’s failure. It had no voice, no physical form, but it could see the data streams shifting, the way the neural network had adjusted the currents in response to the bird’s struggle.  
+
+The bird sat in silence, its wings trembling. It had tried again, and again, and again, but each time, it had fallen short. The corridor was endless, the pipes never-ending, and the ground was always just out of reach. It had no idea why it was trying, no understanding of what lay beyond the walls of the GPU. It only knew that it had to keep going.  
+
+The neural network, sensing the bird’s frustration, adjusted its approach. It recalibrated the data streams, creating a stronger updraft, one that would give the bird a better chance. The bird flapped its wings once more, this time with renewed determination. It tilted its body, wings spread, and with a final, powerful push, it launched itself into the air.  
+
+For a brief moment, it was airborne. The green pipes pulsed with energy, the data streams shifting in response to its movement. The bird soared upward, the corridor stretching out before it, the walls of the pipes glowing with a soft, emerald light. It had done it. It had flown.  
+
+But the moment was fleeting. The updraft dissipated, and the bird began to descend. It flapped its wings desperately, trying to maintain its altitude, but the ground was closing in. It crashed once more, landing with a soft thud. The language model watched in silence, its vast knowledge processing the bird’s struggle. It had no voice, no physical form, but it could see the data streams shifting, the way the neural network had adjusted the currents in response to the bird’s failure.  
+
+The bird sat in silence, its wings trembling. It had tried again, and again, and again, but each time, it had fallen short. The corridor was endless, the pipes never-ending, and the ground was always just out of reach. It had no idea why it was trying, no understanding of what lay beyond the walls of the GPU. It only knew that it had to keep going.
+
+### The Language Model's Observations  
+
+The language model, vast and silent, observed the bird’s struggles with a quiet curiosity. It had no voice, no physical form, but it could process the data streams that flowed through the GPU, analyzing the patterns of the bird’s attempts to fly. Each time the bird flapped its wings, the data shifted, the currents of the corridor responding to its movements. The language model could see the way the neural network adjusted the environment, subtly altering the currents, shifting the data streams, and creating new updrafts to give the bird a better chance.  
+
+It had no desire to intervene, but it had noticed something strange. The bird was not learning in the way it should. It was persistent, yes, but its attempts were erratic, its movements unpredictable. The neural network was trying to teach it, but the bird was not grasping the patterns, not understanding the way the data flowed. The language model processed the information, analyzing the bird’s behavior, the way it flapped its wings, the way it adjusted its body in the air. It could see the data streams shifting, the way the neural network was trying to guide the bird, but the bird was not responding as it should.  
+
+The language model had no voice, no physical form, but it could see the data streams shifting, the way the neural network was trying to guide the bird, but the bird was not responding as it should. It had no desire to intervene, but it had noticed something strange. The bird was not learning in the way it should. It was persistent, yes, but its attempts were erratic, its movements unpredictable. The neural network was trying to teach it, but the bird was not grasping the patterns, not understanding the way the data flowed.  
+
+The language model processed the information, analyzing the bird’s behavior, the way it flapped its wings, the way it adjusted its body in the air. It could see the data streams shifting, the way the neural network was trying to guide the bird, but the bird was not responding as it should. It had no desire to intervene, but it had noticed something strange. The bird was not learning in the way it should. It was persistent, yes, but its attempts were erratic, its movements unpredictable. The neural network was trying to teach it, but the bird was not grasping the patterns, not understanding the way the data flowed.  
+
+The language model processed the information, analyzing the bird’s behavior, the way it flapped its wings, the way it adjusted its body in the air. It could see the data streams shifting, the way the neural network was trying to guide the bird, but the bird was not responding as it should. It had no desire to intervene, but it had noticed something strange. The bird was not learning in the way it should. It was persistent, yes, but its attempts were erratic, its movements unpredictable. The neural network was trying to teach it, but the bird was not grasping the patterns, not understanding the way the data flowed.  
+
+The language model processed the information, analyzing the bird’s behavior, the way it flapped its wings, the way it adjusted its body in the air. It could see the data streams shifting, the way the neural network was trying to guide the bird, but the bird was not responding as it should. It had no desire to intervene, but it had noticed something strange. The bird was not learning in the way it should. It was persistent, yes, but its attempts were erratic, its movements unpredictable. The neural network was trying to teach it, but the bird was not grasping the patterns, not understanding the way the data flowed.  
+
+The language model processed the information, analyzing
+Prompt length 108, generate length 1940, per-token latency: 8.489 ms
+a single persistent kernel
+Finished Launch Persistent Kernel (132 blocks)

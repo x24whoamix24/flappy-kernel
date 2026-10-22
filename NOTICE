@@ -1,0 +1,10 @@
+Flappy Kernel
+Copyright 2026 x24whoamix24
+
+This product includes a patch to Mirage (https://github.com/mirage-project/mirage),
+Copyright 2023-2025 CMU, licensed under the Apache License 2.0.
+
+mirage/megakernel.patch modifies Apache-2.0 files of Mirage at commit
+ca58a02d110a278bffaed503be5e66494db2597d. Builds made from it (such as the image the
+Dockerfile produces) contain those modified files; the changes are described in
+mirage/README.md and are distributed under the same license.

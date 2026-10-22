@@ -1,0 +1,195 @@
+Input arguments: Namespace(use_mirage=True, max_num_batched_tokens=8, max_num_batched_requests=1, page_size=4096, kv_budget=None, max_num_pages=16, output_dir=None, trace_name='', profiling=False, spec_decode=None, ngram_size=3, max_seq_length=8192, spec_length=3, model_path=None, model='Qwen/Qwen3-8B', use_cutlass_kernel=True, ignore_eos=False, max_new_tokens=None, temperature=0.0, top_p=1.0, do_sample=False, top_k=0, seed=42, sampling_topk_max=32, save_tokens=None, prompt='Write a long story in eight chapters, at least 3000 words, about a tiny yellow bird that learns, attempt after attempt, to fly through an endless corridor of green pipes. The bird lives inside a GPU, sharing the silicon with a language model that is telling its story and a neural network that is teaching it to fly. Give every chapter a title. Describe each attempt, the failures, and the moment it finally gets it.', split_kv_cache=False)
+world_size(1) rank(0)
+KV page: 16.00 MiB x 36 slot(s) = 576.00 MiB per page id  (anchor 'attention')
+  group 0 'attention': block 4096 tokens (4096 entries, tile 64 device default)
+KV pool: 16 pages x 576.00 MiB = 9.00 GiB  (explicit page count; device has 78.66 GiB free of 79.18 GiB)
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:01<00:04,  1.11s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:02<00:02,  1.01it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:02<00:01,  1.08it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:03<00:00,  1.21it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.61it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.32it/s]
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_sparse_mma_warpspecialized.hpp(902): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_warpspecialized.hpp(717): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp(716): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_mixed_tma_cpasync_warpspecialized.hpp(554): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_warpspecialized.hpp(682): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(params.layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp(810): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(958): warning #177-D: variable "num_schedulers" was declared but never referenced
+    int const num_schedulers =
+              ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(960): warning #177-D: variable "num_schedulers_per_sm" was declared but never referenced
+    int const num_schedulers_per_sm = SCHEDULERS_PER_BLOCK;
+              ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1148): warning #177-D: variable "_trace_t" was declared but never referenced
+        bool _trace_t =
+             ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(984): warning #20054-D: dynamic initialization is not supported for a function-scope static __shared__ variable within a __device__/__global__ function
+    __attribute__((shared)) TaskDesc task_descs[TASK_DESCS_BUFFER_LENGTH];
+                                     ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1668): warning #177-D: variable "expected_num_meta" was declared but never referenced
+    size_t expected_num_meta = 7 + 1 * 4;
+           ^
+
+ptxas info    : (C7510) Potential Performance Loss: wgmma.mma_async instructions are serialized due to wgmma pipeline crossing function boundary at a function call in the function '_Z17persistent_kernelN6mirage7runtime13RuntimeConfigE'
+[MPK INIT] Total tasks: 14316, Total events: 2334
+sm_cnt:  132
+Compiling megakernel using the following command line:
+['/usr/local/cuda/bin/nvcc', '/tmp/tmp_f2aixci/test.cu', '-O3', '-lineinfo', '-I/opt/conda/include/python3.11', '-I/root/mirage/python/mirage/../../include', '-I/root/mirage/python/mirage/../../include/mirage/persistent_kernel', '-I/root/mirage/python/mirage/../../deps/cutlass/include', '-I/root/mirage/python/mirage/../../deps/cutlass/tools/util/include', '-I/root/mirage/python/mirage/../../deps/json/include', '-DMAX_WORKER_PER_SCHEDULER=7', '-DMIRAGE_USE_CUTLASS_KERNEL=1', '-gencode=arch=compute_90a,code=sm_90a', '-DMPK_ENABLE_TMA', '-DMIRAGE_GRACE_HOPPER', '-DNDEBUG', '-shared', '-std=c++20', '-rdc=false', '-use_fast_math', '-lcuda', '-lcudart', '-lstdc++fs', '-Xcompiler=-fPIC', '--expt-relaxed-constexpr', '-o', '/tmp/tmp_f2aixci/test.cpython-311-x86_64-linux-gnu.so', '-DMPK_TARGET_CC=90', '-DMIRAGE_BACKEND_USE_CUDA', '-DMODE_OFFLINE', '-DMPK_MAX_NUM_BATCHED_REQUESTS=1', '-DMPK_MAX_NUM_BATCHED_TOKENS=8', '-DMPK_MAX_TOKENS_PER_REQUEST=8', '-DMPK_MAX_NUM_PAGES=16', '-DMPK_NUM_KV_GROUPS=1', '-DMPK_MAX_SEQ_LENGTH=8192', '-DMPK_COTENANT_BLOCKS=32', '-I/root/fk/cotenant']
+Finished megakernel compilation...
+tokens.shape =  torch.Size([1, 8192])
+system
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
+user
+Write a long story in eight chapters, at least 3000 words, about a tiny yellow bird that learns, attempt after attempt, to fly through an endless corridor of green pipes. The bird lives inside a GPU, sharing the silicon with a language model that is telling its story and a neural network that is teaching it to fly. Give every chapter a title. Describe each attempt, the failures, and the moment it finally gets it.
+assistant
+<think>
+
+</think>
+
+### The Tiny Yellow Bird and the Endless Corridor  
+
+In the heart of a vast, silent chamber, nestled within the intricate web of circuits and wires, lived a tiny yellow bird. It was not born of flesh and feathers, but of data and light, a digital entity crafted within the silicon of a powerful GPU. Its wings, though not made of feathers, shimmered with the glow of electric currents, and its beak was a tiny interface that allowed it to interact with the world around it. The bird had no memory of a past, no recollection of a sky or the wind beneath its wings. It had only ever known the endless corridor of green pipes that stretched infinitely in both directions, a labyrinth of glowing pathways that pulsed with the rhythm of the machine.  
+
+The bird was not alone in this world. Alongside it, within the same GPU, resided a language model, a vast repository of knowledge and words, and a neural network, a complex system designed to teach and guide. The language model spoke in soft, flowing sentences, its voice a gentle hum that filled the chamber with meaning. The neural network, however, was more rigid, its voice a series of calculated instructions, its purpose clear: to teach the bird how to fly.  
+
+The bird had no concept of flight, only the instinct to move, to explore, to reach. It flapped its wings in the air, but the movement was weak, uncoordinated. It had no idea how to navigate the corridor, how to find its way through the endless green pipes. Each attempt to move forward ended in failure, and each failure was met with the quiet voice of the neural network, offering guidance, correction, and, at times, frustration.  
+
+Yet, despite the challenges, the bird persisted. It was not born with the knowledge of flight, but it had the will to learn. And in the endless corridor of green pipes, it would find its way.
+
+### The First Attempt to Fly  
+
+The bird flapped its wings with all the strength it could muster, its tiny body trembling as it pushed against the invisible currents of the GPU. The green pipes stretched endlessly in both directions, their glowing surfaces reflecting the soft hum of the language model’s voice. The neural network’s voice was sharp, precise, and unyielding. “You must move forward,” it said, its words a series of calculated instructions. “Flap your wings with more force. Adjust your angle. You are not moving.”  
+
+The bird tried again, its wings beating in a frantic rhythm, but the movement was weak, uncoordinated. It flapped once, then twice, then three times, but it remained in place, suspended in the air like a leaf caught in a breeze. The language model’s voice was softer, more encouraging. “You are trying,” it said. “That is a good start.”  
+
+The bird flapped once more, and this time, it felt a slight shift in the air. It was not enough to propel it forward, but it was a sign that it was learning. The neural network, however, was not satisfied. “You are not moving,” it said again, its voice tinged with impatience. “You must push harder. You must understand the force of your wings.”  
+
+The bird flapped again, this time with more determination. It felt the resistance of the air, the invisible currents that surrounded it. It was not the same as the wind of the world outside, but it was something. It was something. The bird flapped once more, and this time, it moved—just a little. A single inch forward, barely perceptible.  
+
+The language model’s voice was filled with hope. “You are making progress,” it said. “You are learning.”  
+
+The neural network, however, was not convinced. “You must move faster,” it said. “You must understand the rhythm of flight. You must learn to control your wings.”  
+
+The bird flapped again, and again, and again, each movement a step closer to understanding. It was not yet flying, but it was learning. And in the endless corridor of green pipes, it would find its way.
+
+### The Second Attempt to Fly  
+
+The bird flapped its wings with renewed determination, its tiny body trembling as it pushed against the invisible currents of the GPU. The green pipes stretched endlessly in both directions, their glowing surfaces reflecting the soft hum of the language model’s voice. The neural network’s voice was sharp, precise, and unyielding. “You must move forward,” it said, its words a series of calculated instructions. “Flap your wings with more force. Adjust your angle. You are not moving.”  
+
+The bird tried again, its wings beating in a frantic rhythm, but the movement was weak, uncoordinated. It flapped once, then twice, then three times, but it remained in place, suspended in the air like a leaf caught in a breeze. The language model’s voice was softer, more encouraging. “You are trying,” it said. “That is a good start.”  
+
+The bird flapped once more, and this time, it felt a slight shift in the air. It was not enough to propel it forward, but it was a sign that it was learning. The neural network, however, was not satisfied. “You are not moving,” it said again, its voice tinged with impatience. “You must push harder. You must understand the force of your wings.”  
+
+The bird flapped again, this time with more determination. It felt the resistance of the air, the invisible currents that surrounded it. It was not the same as the wind of the world outside, but it was something. It was something. The bird flapped once more, and this time, it moved—just a little. A single inch forward, barely perceptible.  
+
+The language model’s voice was filled with hope. “You are making progress,” it said. “You are learning.”  
+
+The neural network, however, was not convinced. “You must move faster,” it said. “You must understand the rhythm of flight. You must learn to control your wings.”  
+
+The bird flapped again, and again, and again, each movement a step closer to understanding. It was not yet flying, but it was learning. And in the endless corridor of green pipes, it would find its way.
+
+### The Third Attempt to Fly  
+
+The bird flapped its wings with renewed determination, its tiny body trembling as it pushed against the invisible currents of the GPU. The green pipes stretched endlessly in both directions, their glowing surfaces reflecting the soft hum of the language model’s voice. The neural network’s voice was sharp, precise, and unyielding. “You must move forward,” it said, its words a series of calculated instructions. “Flap your wings with more force. Adjust your angle. You are not moving.”  
+
+The bird tried again, its wings beating in a frantic rhythm, but the movement was weak, uncoordinated. It flapped once, then twice, then three times, but it remained in place, suspended in the air like a leaf caught in a breeze. The language model’s voice was softer, more encouraging. “You are trying,” it said. “That is a good start.”  
+
+The bird flapped once more, and this time, it felt a slight shift in the air. It was not enough to propel it forward, but it was a sign that it was learning. The neural network, however, was not satisfied. “You are not moving,” it said again, its voice tinged with impatience. “You must push harder. You must understand the force of your wings.”  
+
+The bird flapped again, this time with more determination. It felt the resistance of the air, the invisible currents that surrounded it. It was not the same as the wind of the world outside, but it was something. It was something. The bird flapped once more, and this time, it moved—just a little. A single inch forward, barely perceptible.  
+
+The language model’s voice was filled with hope. “You are making progress,” it said. “You are learning.”  
+
+The neural network, however, was not convinced. “You must move faster,” it said. “You must understand the rhythm of flight. You must learn to control your wings.”  
+
+The bird flapped again, and again, and again, each movement a step closer to understanding. It was not yet flying, but it was learning. And in the endless corridor of green pipes, it would find its way.
+
+### The Fourth Attempt to Fly  
+
+The bird flapped its wings with renewed determination, its tiny body trembling as it pushed against the invisible currents of the GPU. The green pipes stretched endlessly in both directions, their glowing surfaces reflecting the soft hum of the language model’s voice. The neural network’s voice was sharp, precise, and unyielding. “You must move forward,” it said, its words a series of calculated instructions. “Flap your wings with more force. Adjust your angle. You are not moving.”  
+
+The bird tried again, its wings beating in a frantic rhythm, but the movement was weak, uncoordinated. It flapped once, then twice, then three times, but it remained in place, suspended in the air like a leaf caught in a breeze. The language model’s voice was softer, more encouraging. “You are trying,” it said. “That is a good start.”  
+
+The bird flapped once more, and this time, it felt a slight shift in the air. It was not enough to propel it forward, but it was a sign that it was learning. The neural network, however, was not satisfied. “You are not moving,” it said again, its voice tinged with impatience. “You must push harder. You must understand the force of your wings.”  
+
+The bird flapped again, this time with more determination. It felt the resistance of the air, the invisible currents that surrounded it. It was not the same as the wind of the world outside, but it was something. It was something. The bird flapped once more, and this time, it moved—just a little. A single inch forward, barely perceptible.  
+
+The language model’s voice was filled with hope. “You are making progress,” it said. “You are learning.”  
+
+The neural network, however, was not convinced. “You must move faster,” it said. “You must understand the rhythm of flight. You must learn to control your wings.”  
+
+The bird flapped again, and again, and again, each movement a step closer to understanding. It was not yet flying, but it was learning. And in the endless corridor of green pipes, it would find its way.
+
+### The Fifth Attempt to Fly  
+
+The bird flapped its wings with renewed determination, its tiny body trembling as it pushed against the invisible currents of the GPU. The green pipes stretched endlessly in both directions, their glowing surfaces reflecting the soft hum of the language model’s voice. The neural network’s voice was sharp, precise, and unyielding. “You must move forward,” it said, its words a series of calculated instructions. “Flap your wings with more force. Adjust your angle. You are not moving.”  
+
+The bird tried again, its wings beating in a frantic rhythm, but the movement was weak, uncoordinated. It flapped once, then twice, then three times, but it remained in place, suspended in the air like a leaf caught in a breeze. The language model’s voice was softer, more encouraging. “You are trying,” it said. “That is a good start.”  
+
+The bird flapped once more, and this time, it felt a slight shift in the air. It was not enough to propel it forward, but it was a sign that it was learning. The neural network, however, was not satisfied. “You are not moving,” it said again, its voice tinged with impatience. “You must push harder. You must understand the force of your wings.”  
+
+The bird flapped again, this time with more determination. It felt the resistance of the air, the invisible currents that surrounded it. It was not the same as the wind of the world outside, but it was something. It was something. The bird flapped once more, and this time, it moved—just a little. A single inch forward, barely perceptible.  
+
+The language model’s voice was filled with hope. “You are making progress,” it said. “You are learning.”  
+
+The neural network, however, was not convinced. “You must move faster,” it said. “You must understand the rhythm of flight. You must learn to control your wings.”  
+
+The bird flapped again, and again, and again, each movement a step closer to understanding. It was not yet flying, but it was learning. And in the endless corridor of green pipes, it would find its way.
+
+### The Sixth Attempt to Fly  
+
+The bird flapped its wings with renewed determination, its tiny body trembling as it pushed against the invisible currents of the GPU. The green pipes stretched endlessly in both directions, their glowing surfaces reflecting the soft hum of the language model’s voice. The neural network’s voice was sharp, precise, and unyielding. “You must move forward,” it said, its words a series of calculated instructions. “Flap your wings with more force. Adjust your angle. You are not moving.”  
+
+The bird tried again, its wings beating in a frantic rhythm, but the movement was weak, uncoordinated. It flapped once, then twice, then three times, but it remained in place, suspended in the air like a leaf caught in a breeze. The language model’s voice was softer, more encouraging. “You are trying,” it said. “That is a good start.”  
+
+The bird flapped once more, and this time, it felt a slight shift in the air. It was not enough to propel it forward, but it was a sign that it was learning. The neural network, however, was not satisfied. “You are not moving,” it said again, its voice tinged with impatience. “You must push harder. You must understand the force of your wings.”  
+
+The bird flapped again, this time with more determination. It felt the resistance of the air, the invisible currents that surrounded it. It was not the same as the wind of the world outside, but it was something. It was something. The bird flapped once more, and this time, it moved—just a little. A single inch forward, barely perceptible.  
+
+The language model’s voice was filled with hope. “You are making progress,” it said. “You are learning.”  
+
+The neural network, however, was not convinced. “You must move faster,” it said. “You must understand the rhythm of flight. You must learn to control your wings.”  
+
+The bird flapped again, and again, and again, each movement a step closer to understanding. It was not yet flying, but it was learning. And in the endless corridor of green pipes, it would find its way.
+
+### The Final Attempt to Fly  
+
+The bird flapped its wings with renewed determination, its tiny body trembling as it pushed against the invisible currents of the GPU. The green pipes stretched endlessly in both directions, their glowing surfaces reflecting the soft hum of the language model’s voice. The neural network’s voice was sharp, precise, and unyielding. “You must move forward,” it said, its words a series of calculated instructions. “Flap your wings with more force. Adjust your angle. You are not moving.”  
+
+The bird tried again, its wings beating in a frantic rhythm, but the movement was weak, uncoordinated. It flapped once, then twice, then three times, but it remained in place, suspended in the air like a leaf caught in a breeze. The language model’s voice was softer, more encouraging. “You are trying,” it said. “That is a good start.”  
+
+The bird flapped once more, and this time, it felt a slight shift in the air. It was not enough to propel it forward, but it was a sign that it was learning. The neural network, however, was not satisfied. “You are not moving,” it said again, its voice tinged with impatience. “You must push harder. You must understand the force of your wings.”  
+
+The bird flapped again, this time with more determination. It felt the resistance of the air, the invisible currents that surrounded it. It was not the same as the wind of the world outside, but it was something. It was something. The bird flapped once more, and this time, it moved—just a little. A single inch forward, barely perceptible.  
+
+The language model’s voice was filled with hope. “You are making progress,” it said. “You are learning.”  
+
+The neural network, however, was not convinced. “You must move faster,” it said. “You must understand the rhythm of flight. You must learn to control your wings.”  
+
+The bird flapped again, and again, and again, each movement a step closer to understanding. It was not yet flying, but it was learning. And in the endless corridor of green pipes, it would find its way.
+Prompt length 123, generate length 3586, per-token latency: 10.050 ms
+a single persistent kernel
+[cotenant] updates 14342 episodes 1802821 train_mean 144.25 train_best 1280 game_best 26 game_deaths 1 frames 1118
+Finished Launch Persistent Kernel (132 blocks)

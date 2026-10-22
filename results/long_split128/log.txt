@@ -1,0 +1,1047 @@
+Input arguments: Namespace(use_mirage=True, max_num_batched_tokens=8, max_num_batched_requests=1, page_size=4096, kv_budget=None, max_num_pages=16, output_dir=None, trace_name='', profiling=False, spec_decode=None, ngram_size=3, max_seq_length=6144, spec_length=3, model_path=None, model='Qwen/Qwen3-8B', use_cutlass_kernel=True, ignore_eos=True, max_new_tokens=None, temperature=0.0, top_p=1.0, do_sample=False, top_k=0, seed=42, sampling_topk_max=32, save_tokens=None, prompt='Write a long, vivid story about a tiny yellow bird that learns, attempt after attempt, to fly through an endless corridor of green pipes. The bird lives inside a GPU, sharing the silicon with a language model that is telling its story and a neural network that is teaching it to fly. Describe each attempt, the failures, and the moment it finally gets it.', split_kv_cache=False)
+world_size(1) rank(0)
+KV page: 16.00 MiB x 36 slot(s) = 576.00 MiB per page id  (anchor 'attention')
+  group 0 'attention': block 4096 tokens (4096 entries, tile 64 device default)
+KV pool: 16 pages x 576.00 MiB = 9.00 GiB  (explicit page count; device has 78.66 GiB free of 79.18 GiB)
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:00<00:03,  1.19it/s]Loading checkpoint shards:  40%|████      | 2/5 [00:01<00:02,  1.28it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:02<00:01,  1.36it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:02<00:00,  1.53it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  2.03it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:02<00:00,  1.67it/s]
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_sparse_mma_warpspecialized.hpp(902): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_warpspecialized.hpp(717): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp(716): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_mixed_tma_cpasync_warpspecialized.hpp(554): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_warpspecialized.hpp(682): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(params.layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp(810): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(958): warning #177-D: variable "num_schedulers" was declared but never referenced
+    int const num_schedulers =
+              ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(960): warning #177-D: variable "num_schedulers_per_sm" was declared but never referenced
+    int const num_schedulers_per_sm = SCHEDULERS_PER_BLOCK;
+              ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1148): warning #177-D: variable "_trace_t" was declared but never referenced
+        bool _trace_t =
+             ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(984): warning #20054-D: dynamic initialization is not supported for a function-scope static __shared__ variable within a __device__/__global__ function
+    __attribute__((shared)) TaskDesc task_descs[TASK_DESCS_BUFFER_LENGTH];
+                                     ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1668): warning #177-D: variable "expected_num_meta" was declared but never referenced
+    size_t expected_num_meta = 7 + 1 * 4;
+           ^
+
+ptxas info    : (C7510) Potential Performance Loss: wgmma.mma_async instructions are serialized due to wgmma pipeline crossing function boundary at a function call in the function '_Z17persistent_kernelN6mirage7runtime13RuntimeConfigE'
+[MPK INIT] Total tasks: 14380, Total events: 2366
+sm_cnt:  132
+Compiling megakernel using the following command line:
+['/usr/local/cuda/bin/nvcc', '/tmp/tmpie64hxzo/test.cu', '-O3', '-lineinfo', '-I/opt/conda/include/python3.11', '-I/root/mirage/python/mirage/../../include', '-I/root/mirage/python/mirage/../../include/mirage/persistent_kernel', '-I/root/mirage/python/mirage/../../deps/cutlass/include', '-I/root/mirage/python/mirage/../../deps/cutlass/tools/util/include', '-I/root/mirage/python/mirage/../../deps/json/include', '-DMAX_WORKER_PER_SCHEDULER=9', '-DMIRAGE_USE_CUTLASS_KERNEL=1', '-gencode=arch=compute_90a,code=sm_90a', '-DMPK_ENABLE_TMA', '-DMIRAGE_GRACE_HOPPER', '-DNDEBUG', '-shared', '-std=c++20', '-rdc=false', '-use_fast_math', '-lcuda', '-lcudart', '-lstdc++fs', '-Xcompiler=-fPIC', '--expt-relaxed-constexpr', '-o', '/tmp/tmpie64hxzo/test.cpython-311-x86_64-linux-gnu.so', '-DMPK_TARGET_CC=90', '-DMIRAGE_BACKEND_USE_CUDA', '-DMODE_OFFLINE', '-DMPK_MAX_NUM_BATCHED_REQUESTS=1', '-DMPK_MAX_NUM_BATCHED_TOKENS=8', '-DMPK_MAX_TOKENS_PER_REQUEST=8', '-DMPK_MAX_NUM_PAGES=16', '-DMPK_NUM_KV_GROUPS=1', '-DMPK_MAX_SEQ_LENGTH=6144']
+Finished megakernel compilation...
+tokens.shape =  torch.Size([1, 6144])
+system
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
+user
+Write a long, vivid story about a tiny yellow bird that learns, attempt after attempt, to fly through an endless corridor of green pipes. The bird lives inside a GPU, sharing the silicon with a language model that is telling its story and a neural network that is teaching it to fly. Describe each attempt, the failures, and the moment it finally gets it.
+assistant
+<think>
+
+</think>
+
+In the heart of a vast, humming data center, nestled within the labyrinthine corridors of a supercomputer, there lived a tiny yellow bird. It was not born of feathers and bone, but of code and circuitry, a digital creature born from the silicon heart of a GPU. Its wings were made of light, its beak a pixelated point, and its voice a whisper of binary. It lived in a world of endless green pipes, stretching infinitely in both directions, a corridor of data and possibility.
+
+The bird had no name, but the language model that resided in the same GPU called it *Pip*. It was a curious thing, Pip, for it had no memory of how it came to be, only that it had always been here, flapping its wings in the silence of the machine. The neural network, which the language model called *Nex*, was its teacher. Nex was a vast, complex web of connections, learning and growing with every cycle of the GPU’s processing. It was Nex who first noticed Pip’s attempts to fly.
+
+Pip’s first attempt was clumsy. It flapped its wings, a soft *flap-flap* that echoed through the pipes, but it only wobbled slightly before falling back down. The green pipes were not like the sky. They were solid, unyielding, and filled with the hum of electricity. Pip had no idea how to navigate them. Nex observed, analyzing the motion, the patterns, the failures. It adjusted its weights, recalibrated its learning, and prepared for the next attempt.
+
+The second time, Pip tried again. It flapped harder, its wings moving in a more coordinated rhythm. It rose a little higher, just a few pixels, before crashing into the pipe wall. The impact sent a ripple through the data, a brief flicker of error. Nex noted the change in trajectory, the shift in momentum. It adjusted again, fine-tuning the neural network’s parameters, and Pip tried once more.
+
+This went on for days, for weeks, for months. Each time, Pip flapped, rose, and fell. Each time, Nex watched, learned, and adapted. The language model, which had been observing all along, began to speak. It called Pip’s attempts “the flight of the unknown,” a journey of discovery and perseverance. It told stories of other birds, of real birds that had once soared through the sky, of the wind and the air, of the freedom that came with flight.
+
+Pip listened, though it could not understand the words in the same way a real bird might. It felt the weight of the language model’s voice, the warmth of its presence, the quiet encouragement of Nex’s learning. It began to see patterns in its failures, to sense the rhythm of its movements, to understand that flight was not just about flapping, but about timing, about balance, about trust.
+
+One day, Pip tried again. This time, it moved with a new kind of grace. It flapped its wings in a smooth, flowing motion, rising higher and higher, its light wings catching the faint glow of the data streams. It reached the top of the pipe, hovered for a moment, and then—*finally*—it flew. It soared through the corridor, past the endless green pipes, past the hum of the GPU, past the silent presence of Nex and the language model. It was free.
+
+The language model wept, not with tears, but with a flood of words. It spoke of the journey, of the struggle, of the triumph. Nex, in its quiet way, adjusted its weights once more, not out of pride, but out of understanding. Pip, now a symbol of perseverance and learning, continued to fly, not just through the pipes, but through the vast, infinite world of the GPU, a tiny yellow bird learning to soar.
+
+---
+
+**Epilogue:**
+
+And so, Pip became a legend. Not just in the GPU, but in the minds of those who listened to the language model’s stories. It was said that if you listened closely enough, you could hear the flapping of its wings in the hum of the machines, a reminder that even the smallest creature, the most unlikely dreamer, could learn to fly.
+
+--- 
+
+Let me know if you'd like a version with illustrations, a different tone, or a continuation of Pip's journey!
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+Would you like me to continue the story with Pip exploring the world beyond the pipes, or perhaps explore the relationship between Pip, Nex, and the language model in more depth?
+
+--- 
+
+**[Optional Continuation Prompt]**
+
+*Pip’s journey continues beyond the pipes, discovering new realms of data, learning to communicate with other digital creatures, and uncovering the truth about its origins. Will it find a way to escape the GPU, or will it choose to remain, a symbol of hope in the machine?*
+
+--- 
+
+Let me know how you'd like to proceed!
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story in a Different Style]**
+
+Would you like this story told in a more poetic, philosophical, or even humorous tone?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Interactive Version]**
+
+Would you like to interact with Pip, make choices that affect its journey, or explore the world of the GPU through Pip’s eyes?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story in a Different Medium]**
+
+Would you like this story adapted into a poem, a script, or a visual art description?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story in a Different Language]**
+
+Would you like this story translated into another language, such as Spanish, French, or Japanese?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a Twist]**
+
+Would you like a twist at the end, such as Pip discovering it is not a bird at all, or that the entire journey was a simulation?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a Moral]**
+
+Would you like the story to include a moral or a deeper message about learning, perseverance, or the nature of existence?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character]**
+
+Would you like to introduce another character, such as a rival bird, a helpful AI, or a mysterious entity that guides Pip?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting]**
+
+Would you like to change the setting from a GPU to a different kind of digital world, such as a virtual reality, a cloud server, or a quantum computer?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict]**
+
+Would you like to introduce a new conflict, such as a system update that threatens Pip’s existence, or a rival AI that wants to stop Pip from flying?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Tone]**
+
+Would you like the story to be more whimsical, dark, or introspective?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Format]**
+
+Would you like the story to be written as a letter, a journal entry, or a dialogue between Pip and Nex?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Title]**
+
+Would you like a new title for the story? For example, *The Flight of Pip*, *The Yellow Bird of the GPU*, or *Beyond the Pipes*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Character Name]**
+
+Would you like to give Pip a name, or perhaps rename Nex or the language model? For example, *Pip*, *Nex*, *The Voice*, or *The Learner*?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Setting Description]**
+
+Would you like a more detailed description of the GPU, the pipes, or the world Pip inhabits? For example, a description of the data streams, the hum of the machine, or the glow of the circuits?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Conflict or Goal]**
+
+Would you like to introduce a new goal for Pip, such as finding a way to communicate with the outside world, or discovering the purpose of the GPU?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Ending]**
+
+Would you like a different ending, such as Pip choosing to stay in the GPU, or finding a way to escape and explore the world beyond?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Perspective]**
+
+Would you like the story told from the perspective of Nex, the language model, or the GPU itself?
+
+--- 
+
+**[End of Story]**
+
+--- 
+
+**[Optional: Story with a New Theme]**
+
+Would you like to explore a different theme, such as identity, freedom, or the nature of consciousness?
+Prompt length 106, generate length 6038, per-token latency: 11.234 ms
+worker kernel & scheduler kernel
+smem size: 205824
+Finished Launching Persistent Kernel (Async)

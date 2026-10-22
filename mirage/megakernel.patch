@@ -1,0 +1,807 @@
+SPDX-License-Identifier: Apache-2.0
+Flappy Kernel changes to Mirage (https://github.com/mirage-project/mirage).
+Changes copyright 2026 x24whoamix24; Mirage copyright 2023-2025 CMU.
+Both under the Apache License 2.0.
+
+Apply to Mirage at commit ca58a02d110a278bffaed503be5e66494db2597d:
+  git apply megakernel.patch
+The files listed below are modified by this patch; mirage/README.md describes
+the changes. git apply ignores this text, which ends before the first diff.
+
+diff --git a/demo/qwen3/demo.py b/demo/qwen3/demo.py
+index 19fbb6a1..8b12eaca 100644
+--- a/demo/qwen3/demo.py
++++ b/demo/qwen3/demo.py
+@@ -4,6 +4,8 @@ from safetensors.torch import load_model
+ import torch
+ import torch.distributed as dist
+ import argparse
++import sys
++import time
+ import os, json
+ 
+ from models.qwen3_shard_loader import Qwen3ShardLoader
+@@ -68,6 +70,111 @@ def max_factor_leq_n(m: int, n: int) -> int:
+         i += 1
+     return max_factor
+ 
++PINNED_RING_CAPACITY = 8  # requests in flight between the host and the GPU
++
++
++def pinned_ring_tensors(max_seq_length, max_num_batched_requests):
++    """The pinned buffers Mirage's online_pinned mode takes requests from and
++    reports completions to (see mirage.mpk.OnlinePinnedRuntime)."""
++    cap, rows = PINNED_RING_CAPACITY, max_num_batched_requests
++
++    def i32(n, fill=0):
++        return torch.full((n,), fill, dtype=torch.int32).pin_memory()
++
++    return {
++        "pinned_req_ready": i32(cap),
++        "pinned_req_request_id": i32(cap),
++        "pinned_req_prompt_len": i32(cap),
++        "pinned_req_initial_step": i32(cap),
++        "pinned_comp_ready": i32(cap),
++        "pinned_comp_request_id": i32(cap),
++        "pinned_comp_buffer_row": i32(cap),
++        "pinned_comp_final_step": i32(cap),
++        "pinned_shutdown": i32(1),
++        "pinned_step": i32(rows),
++        "pinned_inbox_tokens": torch.zeros(
++            cap, max_seq_length, dtype=torch.int64).pin_memory(),
++        "pinned_rid_at_row": i32(rows, -1),
++    }
++
++
++def serve_requests(mpk, tokenizer, tokens, pinned, max_seq_length, serve_dir):
++    """Answers questions with one launch of the compiled online_pinned
++    megakernel, which stays up (and keeps its co-tenants running) until
++    <serve_dir>/stop exists. Questions come from <serve_dir>/queue/*.json
++    ({"prompt": ..., "source": ...}), oldest first, one at a time. Question n
++    is named in current.json while it is decoded and its answer goes to
++    done/<n>.json; the co-tenants publish its tokens under the same n."""
++    import glob
++    import types
++    from mirage.mpk import OnlinePinnedRuntime
++
++    queue = os.path.join(serve_dir, "queue")
++    done = os.path.join(serve_dir, "done")
++    current = os.path.join(serve_dir, "current.json")
++    stop = os.path.join(serve_dir, "stop")
++    os.makedirs(queue, exist_ok=True)
++    os.makedirs(done, exist_ok=True)
++
++    def write_json(path, obj):
++        with open(path + ".tmp", "w") as f:
++            json.dump(obj, f)
++        os.replace(path + ".tmp", path)
++
++    def next_question():
++        for path in sorted(glob.glob(os.path.join(queue, "*.json"))):
++            try:
++                with open(path) as f:
++                    req = json.load(f)
++            except (OSError, ValueError):
++                req = None
++            os.remove(path)
++            if isinstance(req, dict) and req.get("prompt"):
++                return req
++        return None
++
++    # OnlinePinnedRuntime reads these from Mirage's MPK wrapper; this demo
++    # builds the PersistentKernel itself.
++    runtime = OnlinePinnedRuntime(types.SimpleNamespace(
++        metadata=types.SimpleNamespace(mode="online_pinned"),
++        persistent_kernel=mpk, pinned_ring_capacity=PINNED_RING_CAPACITY,
++        total_num_requests=tokens.shape[0], tokens=tokens, **pinned))
++    runtime.reset()
++    runtime.start()
++    mpk()  # returns at once; the launch lasts until the shutdown below
++    rid = 0
++    try:
++        while not os.path.exists(stop):
++            req = next_question()
++            if req is None:
++                time.sleep(0.02)
++                continue
++            text = tokenizer.apply_chat_template(
++                [{"role": "user", "content": req["prompt"]}], tokenize=False,
++                add_generation_prompt=True, enable_thinking=False)
++            ids = tokenizer(text)["input_ids"][: max_seq_length // 2]
++            rid += 1
++            write_json(current, {"launch": rid, "prompt_len": len(ids),
++                                 "started": time.time(), **req})
++            t0 = time.time()
++            runtime.submit(rid, torch.tensor(ids, dtype=torch.int64))
++            while (completion := runtime.get_completion(rid)) is None:
++                time.sleep(0.002)
++            seconds = time.time() - t0
++            row, final_step = completion
++            out_ids = runtime.read_tokens_range(row, len(ids), final_step).tolist()
++            runtime.release_request(rid)
++            write_json(os.path.join(done, f"{rid:08d}.json"),
++                       {"launch": rid, "seconds": seconds, "generated": len(out_ids),
++                        "text": tokenizer.decode(out_ids, skip_special_tokens=True),
++                        **req})
++            os.remove(current)
++    finally:
++        runtime.request_shutdown()
++        mpk.wait()
++        runtime.stop()
++
++
+ if __name__ == "__main__":
+     parser = argparse.ArgumentParser()
+     parser.add_argument("--use-mirage", action="store_true", help="Use Mirage kernels")
+@@ -277,7 +384,8 @@ if __name__ == "__main__":
+         {"role": "user", "content": prompt},
+     ]
+     text = tokenizer.apply_chat_template(
+-        messages, tokenize=False, add_generation_prompt=True
++        messages, tokenize=False, add_generation_prompt=True,
++        enable_thinking=os.environ.get("MPK_THINKING", "1") == "1",
+     )
+     model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+     for r in range(total_num_requests):
+@@ -344,8 +452,21 @@ if __name__ == "__main__":
+         kv_meta_tensors = kv_plan.build_meta_tensors(
+             max_num_batched_requests=args.max_num_batched_requests,
+             max_seq_length=args.max_seq_length)
++        # MPK_SERVE_DIR: one launch serves every request (online_pinned).
++        serve_dir = os.environ.get("MPK_SERVE_DIR")
++        pinned = (pinned_ring_tensors(args.max_seq_length,
++                                      args.max_num_batched_requests)
++                  if serve_dir else {})
++        if serve_dir:
++            # The online scheduler stages the page table in shared memory and
++            # never reads these, but compile() needs them; offline allocates
++            # its own.
++            for g in range(len(kv_plan.group_specs())):
++                kv_meta_tensors[f"paged_kv_indices_snapshot_{g}"] = torch.zeros_like(
++                    kv_meta_tensors[f"paged_kv_indices_buffer_{g}"])
+         mpk = mi.PersistentKernel(
+-            mode="offline",
++            mode="online_pinned" if serve_dir else "offline",
++            pinned_ring_capacity=PINNED_RING_CAPACITY if serve_dir else 0,
+             world_size=world_size,
+             mpi_rank=rank,
+             num_workers=num_workers,
+@@ -366,6 +487,7 @@ if __name__ == "__main__":
+                 "prompt_lengths": prompt_lengths,
+                 "qo_indptr_buffer": qo_indptr_buffer,
+                 **kv_meta_tensors,
++                **pinned,
+             },
+             profiler_tensor=profiler_tensor,
+             trace_name=args.trace_name,
+@@ -945,10 +1067,16 @@ if __name__ == "__main__":
+             print(f"Saved tokens to {save_path}")
+ 
+     else:
++        if os.environ.get("MPK_SERVE_DIR"):
++            serve_requests(mpk, tokenizer, tokens, pinned, args.max_seq_length,
++                           os.environ["MPK_SERVE_DIR"])
++            sys.exit(0)
++        wall_start = time.time()
+         starter.record()
+         mpk()
+         ender.record()
+         torch.cuda.synchronize()
++        wall_end = time.time()
+         run_time = starter.elapsed_time(ender)
+ 
+         print("tokens.shape = ", tokens.shape)
+@@ -962,6 +1090,16 @@ if __name__ == "__main__":
+ 
+         tokens_generated = step.max().item() + 1 - prompt_lengths[0].item()
+         per_tok_ms = run_time / max(prompt_lengths[0].item() + tokens_generated, 1)
++        if os.environ.get("MPK_DUMP_RUN"):
++            with open(os.environ["MPK_DUMP_RUN"], "w") as f:
++                json.dump({
++                    "prompt_length": prompt_lengths[0].item(),
++                    "token_ids": tokens[0, : step[0] + 1].tolist(),
++                    "run_time_ms": run_time,
++                    "generated": tokens_generated,
++                    "wall_start": wall_start,
++                    "wall_end": wall_end,
++                }, f)
+ 
+         print("Prompt length {}, generate length {}, per-token latency: {:.3f} ms".format(
+               prompt_lengths[0], tokens_generated, per_tok_ms
+diff --git a/include/mirage/persistent_kernel/persistent_kernel.cuh b/include/mirage/persistent_kernel/persistent_kernel.cuh
+index 873e064b..aed1406c 100644
+--- a/include/mirage/persistent_kernel/persistent_kernel.cuh
++++ b/include/mirage/persistent_kernel/persistent_kernel.cuh
+@@ -84,6 +84,16 @@ static_assert(MPK_MAX_TOKENS_PER_REQUEST >= 1 &&
+ #endif
+ #define INIT_NUM_THREADS 128
+ 
++// Co-tenant blocks (game + training) appended to the single persistent kernel.
++#if defined(MPK_COTENANT_BLOCKS) && MPK_COTENANT_BLOCKS > 0
++#define MPK_COTENANT_ENABLED 1
++#define COTENANT_THREADS SINGLE_KERNEL_NUM_THREADS
++#include "cotenant.cuh"
++#else
++#define MPK_COTENANT_ENABLED 0
++#define MPK_COTENANT_BLOCKS 0
++#endif
++
+ #ifndef CUDA_CHECK
+ #define CUDA_CHECK(call)                                                       \
+   do {                                                                         \
+@@ -599,7 +609,21 @@ __device__ __forceinline__ bool
+   // Reclaim rows only after the CPU has copied their completed output and
+   // release-stored -1 to pinned_step. The owner mapping stays stable for the
+   // full CPU read, so a completion can never refer to a reused row.
++  // Only a row that is neither running nor free can be awaiting that release.
++  // Skipping the others keeps host-memory reads off the per-token path: a GPU
++  // read of host memory waits behind all of the GPU's queued writes to it
++  // (PCIe ordering), such as frames written by co-tenant blocks.
+   for (int row = 0; row < MPK_MAX_NUM_BATCHED_REQUESTS; row++) {
++    bool running_or_free = false;
++    for (int i = 0; i < MPK_MAX_NUM_BATCHED_REQUESTS; i++) {
++      running_or_free |= config.request_ids[i] == row;
++    }
++    for (int i = 0; i < free_row_top; i++) {
++      running_or_free |= config.free_rows[i] == row;
++    }
++    if (running_or_free) {
++      continue;
++    }
+     int32_t owner = ld_acquire_sys_i32(&config.pinned_rid_at_row[row]);
+     int32_t progress = ld_acquire_sys_i32(&config.pinned_step[row]);
+     if (owner >= 0 && progress == -1) {
+@@ -833,11 +857,17 @@ __device__ __forceinline__ bool
+   // spin-wait instead of exiting so the kernel stays alive for future
+   // requests.  Check shutdown signal to terminate.
+   if (num_tokens == 0) {
+-    if (ld_acquire_sys_i32(config.pinned_shutdown) != 0) {
+-      return false; // terminate kernel
++    // Idle: wait here for the next request instead of running empty task
++    // graphs back to back, whose task and event traffic slows the co-tenant
++    // blocks that share the GPU's L2.
++    int const next_slot = gpu_req_head & ring_mask;
++    while (ld_acquire_sys_i32(&config.pinned_req_ready[next_slot]) == 0) {
++      if (ld_acquire_sys_i32(config.pinned_shutdown) != 0) {
++        return false; // terminate kernel
++      }
++      __nanosleep(10000);
+     }
+-    __nanosleep(100);
+-    return true; // idle — keep kernel alive, scheduler will re-invoke
++    return true; // a request is waiting; the next iteration admits it
+   }
+ 
+   return (num_tokens > 0);
+@@ -922,7 +952,8 @@ __device__ __forceinline__ void worker_checker(RuntimeConfig config) {
+   // int num_schedulers =
+   //    config.num_local_schedulers + config.num_remote_schedulers;
+ 
+-  assert(gridDim.x == config.num_workers);
++  assert(gridDim.x == config.num_workers ||
++         gridDim.x == config.num_workers + MPK_COTENANT_BLOCKS);
+   assert(config.num_workers <= MAX_NUM_WORKERS);
+   // We will reinterpret TaskDesc as an array of integers to
+   // collectively load it from device to shared memory
+@@ -949,8 +980,9 @@ __device__ __forceinline__ void persistent_checker(RuntimeConfig config) {
+       config.num_local_schedulers + config.num_remote_schedulers;
+   int const num_schedulers_per_sm = SCHEDULERS_PER_BLOCK;
+   assert(num_schedulers % num_schedulers_per_sm == 0);
+-  assert(gridDim.x ==
+-         config.num_workers + num_schedulers / num_schedulers_per_sm);
++  assert(gridDim.x == config.num_workers +
++                          num_schedulers / num_schedulers_per_sm +
++                          MPK_COTENANT_BLOCKS);
+   assert(config.num_workers <= MAX_NUM_WORKERS);
+   // We will reinterpret TaskDesc as an array of integers to
+   // collectively load it from device to shared memory
+@@ -958,7 +990,8 @@ __device__ __forceinline__ void persistent_checker(RuntimeConfig config) {
+   // assert(blockDim.x >= 128);
+ }
+ 
+-__device__ __forceinline__ void execute_worker(RuntimeConfig config) {
++__device__ __forceinline__ void execute_worker(RuntimeConfig config,
++                                               int const worker_id) {
+   // Make sure overall smem usage here do not exceed 3KB
+   // last_task_pos: 2 * 8 = 16 B
+   // next_task_pos: 2 * 8 = 16 B
+@@ -985,7 +1018,6 @@ __device__ __forceinline__ void execute_worker(RuntimeConfig config) {
+                 (threadIdx.x % WORKER_NUM_THREADS == 0));
+ 
+ #endif
+-  int const worker_id = blockIdx.x;
+   worker_queues[0] = config.worker_queues[worker_id];
+   worker_queue_ids[0] = worker_id;
+   int num_worker_queues = 1;
+@@ -1124,6 +1156,11 @@ __device__ __forceinline__ void execute_worker(RuntimeConfig config) {
+     // Successfully fetched a new task
+     if (task_desc->task_type == TASK_TERMINATE) {
+       // Terminate
++#if MPK_COTENANT_ENABLED
++      if (threadIdx.x == 0) {
++        cotenant::signal_stop();
++      }
++#endif
+       return;
+     } else if (task_desc->task_type == TASK_BEGIN_TASK_GRAPH) {
+       // Do nothing
+@@ -1526,23 +1563,254 @@ __device__ __forceinline__ void execute_scheduler(RuntimeConfig config,
+   }
+ }
+ 
++// Non-worker paths of the single kernel sit behind real calls. Inlined next to
++// the worker path, they make ptxas serialize every wgmma pipeline of the worker
++// (C7510), which costs the single-kernel launch ~5% of decode speed.
++__device__ __noinline__ void execute_scheduler_entry(RuntimeConfig const &config,
++                                                     int offset) {
++  execute_scheduler(config, offset);
++}
++
++#if MPK_COTENANT_ENABLED
++#ifdef MODE_ONLINE_PINNED
++static_assert(MPK_MAX_NUM_BATCHED_REQUESTS == 1,
++              "the co-tenants' LLM feed follows token row 0");
++#endif
++
++// Online serving runs every request in one launch, so the co-tenants follow
++// the request in token row 0 by its id and read the step the scheduler
++// release-stores for the host. Otherwise each launch is one request.
++__device__ __noinline__ void cotenant_entry(RuntimeConfig const &config,
++                                            int ct_block) {
++  extern __shared__ __align__(128) char cotenant_smem[];
++#ifdef MODE_ONLINE_PINNED
++  cotenant::run(const_cast<int const *>(config.pinned_step),
++                config.prompt_length,
++                config.tokens,
++                const_cast<int const *>(config.pinned_rid_at_row),
++                ct_block,
++                cotenant_smem);
++#else
++  cotenant::run(config.step, config.prompt_length, config.tokens, nullptr,
++                ct_block, cotenant_smem);
++#endif
++}
++
++// Block placement in the fused launch (MPK_COTENANT_FUSED). The hardware
++// decides which SM runs which block, and decode is ~5% slower when MPK's
++// workers share a GPC with its schedulers than when the co-tenants do: the
++// latency-bound schedulers suffer more next to memory-bound workers than next
++// to compute-bound learners. So every launch assigns roles after placement:
++// blocks on SMs in the schedulers' GPCs become co-tenants, the rest workers.
++constexpr int kMaxSms = 256;
++__device__ int mpk_sm_gpc[kMaxSms];        // from probe_gpcs(); -1 if unknown
++__device__ unsigned mpk_block_sm[kMaxSms]; // per worker-kernel block
++__device__ unsigned mpk_sched_sm[kMaxSms]; // per scheduler block
++__device__ unsigned mpk_placed_blocks;     // reset before every launch
++__device__ unsigned mpk_placed_schedulers; // reset before every launch
++// How roles are chosen in this launch, decided once for every block alike:
++// 0 undecided, 1 by the schedulers' GPCs, 2 by block order. Reset before
++// every launch.
++__device__ unsigned mpk_placement;
++
++__device__ __forceinline__ unsigned current_sm() {
++  unsigned sm;
++  asm volatile("mov.u32 %0, %%smid;" : "=r"(sm));
++  return sm;
++}
++
++struct BlockRole {
++  bool cotenant;
++  int index; // co-tenant block or worker id
++};
++
++// Thread 0 of every worker-kernel block, once per launch. All blocks are
++// resident (persistent launch), so they can wait for each other here.
++__device__ __noinline__ BlockRole place_block(RuntimeConfig const &config) {
++  int const num_blocks = gridDim.x;
++  int const num_sched_blocks =
++      config.num_local_schedulers / SCHEDULERS_PER_BLOCK;
++  unsigned volatile *block_sm = mpk_block_sm;
++  unsigned volatile *sched_sm = mpk_sched_sm;
++  block_sm[blockIdx.x] = current_sm();
++  __threadfence();
++  atomicAdd(&mpk_placed_blocks, 1u);
++  while (atomicAdd(&mpk_placed_blocks, 0u) < unsigned(num_blocks)) {
++    __nanosleep(100);
++  }
++  // The schedulers start together with the workers; without them within a
++  // millisecond, keep MPK's default roles. The first block to see either
++  // outcome publishes it, so that every block assigns roles the same way.
++  long long deadline;
++  asm volatile("mov.u64 %0, %%globaltimer;" : "=l"(deadline));
++  deadline += 1000000;
++  unsigned decision;
++  while ((decision = atomicAdd(&mpk_placement, 0u)) == 0u) {
++    long long now;
++    asm volatile("mov.u64 %0, %%globaltimer;" : "=l"(now));
++    if (atomicAdd(&mpk_placed_schedulers, 0u) == unsigned(num_sched_blocks)) {
++      atomicCAS(&mpk_placement, 0u, 1u);
++    } else if (now > deadline) {
++      atomicCAS(&mpk_placement, 0u, 2u);
++    } else {
++      __nanosleep(100);
++    }
++  }
++  bool const known = decision == 1u;
++  __threadfence();
++  auto preferred = [&](int b) {
++    int const gpc = known ? mpk_sm_gpc[block_sm[b]] : -1;
++    for (int i = 0; gpc >= 0 && i < num_sched_blocks; i++) {
++      if (mpk_sm_gpc[sched_sm[i]] == gpc) {
++        return true;
++      }
++    }
++    return false;
++  };
++  // Co-tenants: the preferred blocks in block order, topped up (or, without
++  // placement information, entirely made up) by the last other blocks.
++  int num_preferred = 0;
++  for (int b = 0; b < num_blocks; b++) {
++    num_preferred += preferred(b);
++  }
++  int const num_others = num_blocks - num_preferred;
++  int const top_up = MPK_COTENANT_BLOCKS - min(num_preferred, MPK_COTENANT_BLOCKS);
++  int preferred_seen = 0, others_seen = 0, cotenants = 0, workers = 0;
++  for (int b = 0; b < num_blocks; b++) {
++    bool const cotenant = preferred(b)
++                              ? preferred_seen++ < MPK_COTENANT_BLOCKS
++                              : others_seen++ >= num_others - top_up;
++    if (b == int(blockIdx.x)) {
++      return {cotenant, cotenant ? cotenants : workers};
++    }
++    (cotenant ? cotenants : workers)++;
++  }
++  return {false, int(blockIdx.x)};
++}
++
++// Blocks of one thread-block cluster run in the same GPC, so SMs seen
++// together in a cluster share one. Leaves mpk_sm_gpc at -1 (no placement
++// preference) where the GPU has no clusters.
++__global__ void record_sm_kernel(unsigned *out) {
++  if (threadIdx.x == 0) {
++    out[blockIdx.x] = current_sm();
++  }
++  long long const start = clock64();
++  while (clock64() - start < 1000000) {
++    // keep the cluster's blocks resident together
++  }
++}
++
++static int find_root(std::vector<int> &parent, int x) {
++  return parent[x] == x ? x : parent[x] = find_root(parent, parent[x]);
++}
++
++static void probe_gpcs(int num_sms) {
++  std::vector<int> gpc(kMaxSms, -1);
++  std::vector<int> parent(kMaxSms);
++  for (int i = 0; i < kMaxSms; i++) {
++    parent[i] = i;
++  }
++  unsigned *d_sm = nullptr;
++  cudaMalloc(&d_sm, kMaxSms * sizeof(unsigned));
++  std::vector<unsigned> sm(kMaxSms);
++  cudaFuncSetAttribute(
++      record_sm_kernel, cudaFuncAttributeNonPortableClusterSizeAllowed, 1);
++  bool any = false;
++  for (int cluster : {16, 8}) {
++    for (int grid = cluster; grid <= std::min(num_sms, kMaxSms);
++         grid += cluster) {
++      cudaLaunchConfig_t cfg = {};
++      cfg.gridDim = dim3(grid);
++      cfg.blockDim = dim3(32);
++      cudaLaunchAttribute attr;
++      attr.id = cudaLaunchAttributeClusterDimension;
++      attr.val.clusterDim.x = cluster;
++      attr.val.clusterDim.y = 1;
++      attr.val.clusterDim.z = 1;
++      cfg.attrs = &attr;
++      cfg.numAttrs = 1;
++      if (cudaLaunchKernelEx(&cfg, record_sm_kernel, d_sm) != cudaSuccess ||
++          cudaMemcpy(sm.data(), d_sm, grid * sizeof(unsigned),
++                     cudaMemcpyDeviceToHost) != cudaSuccess) {
++        cudaGetLastError();
++        continue;
++      }
++      any = true;
++      for (int c = 0; c < grid; c += cluster) {
++        for (int k = 1; k < cluster; k++) {
++          parent[find_root(parent, sm[c + k])] = find_root(parent, sm[c]);
++        }
++      }
++    }
++  }
++  cudaFree(d_sm);
++  if (any) {
++    for (int s = 0; s < std::min(num_sms, kMaxSms); s++) {
++      gpc[s] = find_root(parent, s);
++    }
++  }
++  cudaMemcpyToSymbol(mpk_sm_gpc, gpc.data(), kMaxSms * sizeof(int));
++}
++#endif
++
+ __global__ __launch_bounds__(WORKER_NUM_THREADS,
+                              1) void persistent_kernel(RuntimeConfig config) {
++#if MPK_COTENANT_ENABLED
++  if (blockIdx.x >= gridDim.x - MPK_COTENANT_BLOCKS) {
++    cotenant_entry(config, blockIdx.x - (gridDim.x - MPK_COTENANT_BLOCKS));
++    return;
++  }
++#endif
+   persistent_checker(config);
+   if (blockIdx.x < config.num_workers) {
+-    execute_worker(config);
++    execute_worker(config, blockIdx.x);
+   } else {
+-    execute_scheduler(config, -(SCHEDULERS_PER_BLOCK * config.num_workers));
++    execute_scheduler_entry(config,
++                            -(SCHEDULERS_PER_BLOCK * config.num_workers));
+   }
+ }
+ 
+ __global__ __launch_bounds__(WORKER_NUM_THREADS,
+                              1) void worker_kernel(RuntimeConfig config) {
++  int worker_id = blockIdx.x;
++#if MPK_COTENANT_ENABLED
++  // Fused mode: co-tenant blocks appended to MPK's worker launch, with roles
++  // chosen by placement (place_block).
++  if (gridDim.x > config.num_workers) {
++    __shared__ BlockRole role;
++    if (threadIdx.x == 0) {
++      role = place_block(config);
++    }
++    __syncthreads();
++    if (role.cotenant) {
++      cotenant_entry(config, role.index);
++      return;
++    }
++    worker_id = role.index;
++  }
++#endif
+   worker_checker(config);
+-  execute_worker(config);
++  execute_worker(config, worker_id);
+ }
+ 
++#if MPK_COTENANT_ENABLED
++__global__ __launch_bounds__(SINGLE_KERNEL_NUM_THREADS,
++                             1) void cotenant_kernel(RuntimeConfig config) {
++  extern __shared__ __align__(128) char cotenant_smem[];
++  cotenant::run(config.step, config.prompt_length, config.tokens, nullptr,
++                blockIdx.x, cotenant_smem);
++}
++#endif
++
+ __global__ void scheduler_kernel(RuntimeConfig config) {
++#if MPK_COTENANT_ENABLED
++  if (threadIdx.x == 0) { // for place_block
++    mpk_sched_sm[blockIdx.x] = current_sm();
++    __threadfence();
++    atomicAdd(&mpk_placed_schedulers, 1u);
++  }
++#endif
+   scheduler_checker(config);
+   execute_scheduler(config, 0);
+ }
+@@ -1796,7 +2064,38 @@ extern "C" void
+   global_runtime_config.num_gpus = npes;
+   global_runtime_config.my_gpu_id = mype;
+   global_runtime_config.num_graphs = 1;
+-  global_runtime_config.split_worker_scheduler = true;
++  // Where co-tenant blocks run: by default in the single persistent kernel;
++  // with MPK_COTENANT_FUSED in the worker kernel of MPK's default split launch
++  // (what the arcade uses); with MPK_COTENANT_SEPARATE as their own kernel
++  // next to that split launch (a baseline). MPK_SINGLE_KERNEL selects the
++  // single-kernel launch without co-tenants (a baseline).
++  global_runtime_config.split_worker_scheduler =
++      !((MPK_COTENANT_ENABLED && getenv("MPK_COTENANT_SEPARATE") == nullptr &&
++         getenv("MPK_COTENANT_FUSED") == nullptr) ||
++        getenv("MPK_SINGLE_KERNEL") != nullptr);
++#if MPK_COTENANT_ENABLED
++  {
++    // Workers, schedulers and co-tenants wait on each other, so all of them
++    // must be resident at once; with too few SMs the launch hangs silently.
++    int device = 0, num_sms = 0;
++    cudaGetDevice(&device);
++    cudaDeviceGetAttribute(&num_sms, cudaDevAttrMultiProcessorCount, device);
++    int const scheduler_blocks =
++        (num_local_schedulers + num_remote_schedulers) / SCHEDULERS_PER_BLOCK;
++    int const blocks = num_workers + scheduler_blocks + MPK_COTENANT_BLOCKS;
++    if (blocks > num_sms) {
++      fprintf(stderr,
++              "mirage: %d workers + %d scheduler blocks + %d co-tenant blocks "
++              "= %d resident blocks, but this GPU has %d SMs. Lower "
++              "MPK_NUM_WORKERS or MPK_COTENANT_BLOCKS.\n",
++              num_workers, scheduler_blocks, MPK_COTENANT_BLOCKS, blocks,
++              num_sms);
++      exit(1);
++    }
++    probe_gpcs(num_sms);
++  }
++  cotenant::host_init(MPK_COTENANT_BLOCKS);
++#endif
+ 
+   std::vector<FullTaskDesc> all_fulltasks;
+   std::vector<EventDesc> all_events;
+@@ -1957,6 +2256,23 @@ extern "C" void
+ // Entry point for C/C++
+ // TODO: change launch config
+ extern "C" void launch_persistent_kernel(cudaStream_t default_stream) {
++  // MPK_RELAUNCH: serve a new request per launch. init_kernel normally runs
++  // once at init; re-running it resets request state (steps, request ids,
++  // KV page queue) so the next launch decodes the request now in `tokens`.
++  if (getenv("MPK_RELAUNCH") != nullptr) {
++    init_kernel<<<dim3(1, 1, 1), dim3(INIT_NUM_THREADS, 1, 1), 0,
++                  default_stream>>>(global_runtime_config);
++  }
++#if MPK_COTENANT_ENABLED
++  // place_block() counts arrivals from zero in every launch; queued before
++  // prepare_done_event, which the worker and scheduler kernels wait for.
++  for (unsigned *counter :
++       {&mpk_placed_blocks, &mpk_placed_schedulers, &mpk_placement}) {
++    void *address;
++    cudaGetSymbolAddress(&address, *counter);
++    cudaMemsetAsync(address, 0, sizeof(unsigned), default_stream);
++  }
++#endif
+   // int device;
+   // cudaGetDevice(&device);
+   // int sm_count;
+@@ -1992,7 +2308,15 @@ extern "C" void launch_persistent_kernel(cudaStream_t default_stream) {
+     // The split kernel does not support NVSHMEM because
+     // nvshmemx_collective_launch launches kernels sequentially, which blocks
+     // the interaction between the worker kernel and the scheduler kernel
+-    worker_kernel<<<dim3(global_runtime_config.num_workers, 1, 1),
++    int worker_blocks = global_runtime_config.num_workers;
++#if MPK_COTENANT_ENABLED
++    bool const fused = getenv("MPK_COTENANT_FUSED") != nullptr;
++    if (fused) {
++      worker_blocks += MPK_COTENANT_BLOCKS;
++      cotenant::host_start();
++    }
++#endif
++    worker_kernel<<<dim3(worker_blocks, 1, 1),
+                     dim3(WORKER_NUM_THREADS, 1, 1),
+                     MAX_DYNAMIC_SHARED_MEMORY_SIZE /*smem*/,
+                     global_runtime_config.worker_stream>>>(
+@@ -2008,6 +2332,38 @@ extern "C" void launch_persistent_kernel(cudaStream_t default_stream) {
+         0 /*smem*/,
+         global_runtime_config.scheduler_stream>>>(global_runtime_config);
+ 
++#if MPK_COTENANT_ENABLED
++    // Online, the launch runs until shutdown and the caller holds the Python
++    // GIL here, so wait_persistent_kernel() ends the co-tenants' host side.
++#ifndef MODE_ONLINE_PINNED
++    if (fused) {
++      cudaStreamSynchronize(global_runtime_config.worker_stream);
++      cotenant::host_stop();
++    }
++#endif
++    // Separate-kernel baseline: queued after MPK's kernels on its own stream,
++    // so it only gets SMs MPK leaves free.
++    if (getenv("MPK_COTENANT_SEPARATE") != nullptr) {
++      static cudaStream_t cotenant_stream = nullptr;
++      if (cotenant_stream == nullptr) {
++        cudaStreamCreateWithFlags(&cotenant_stream, cudaStreamNonBlocking);
++        cudaFuncSetAttribute(cotenant_kernel,
++                             cudaFuncAttributeMaxDynamicSharedMemorySize,
++                             MAX_DYNAMIC_SHARED_MEMORY_SIZE);
++      }
++      cotenant::host_start();
++      cotenant_kernel<<<dim3(MPK_COTENANT_BLOCKS, 1, 1),
++                        dim3(SINGLE_KERNEL_NUM_THREADS, 1, 1),
++                        MAX_DYNAMIC_SHARED_MEMORY_SIZE,
++                        cotenant_stream>>>(global_runtime_config);
++      // The host ends the co-tenants once MPK's kernels have finished.
++      cudaStreamSynchronize(global_runtime_config.worker_stream);
++      cudaStreamSynchronize(global_runtime_config.scheduler_stream);
++      cotenant::host_shared()->stop = 1;
++      cudaStreamSynchronize(cotenant_stream);
++      cotenant::host_stop();
++    }
++#endif
+ #ifdef MODE_OFFLINE
+     cudaEventRecord(global_runtime_config.worker_done_event,
+                     global_runtime_config.worker_stream);
+@@ -2023,7 +2379,11 @@ extern "C" void launch_persistent_kernel(cudaStream_t default_stream) {
+   } else {
+     printf("a single persistent kernel\n");
+     int num_sms_to_use = global_runtime_config.num_workers +
+-                         num_schedulers / SCHEDULERS_PER_BLOCK;
++                         num_schedulers / SCHEDULERS_PER_BLOCK +
++                         MPK_COTENANT_BLOCKS;
++#if MPK_COTENANT_ENABLED
++    cotenant::host_start();
++#endif
+ #ifdef USE_NVSHMEM
+     void *args[] = {&global_runtime_config};
+     nvshmemx_collective_launch((void const *)persistent_kernel,
+@@ -2042,7 +2402,10 @@ extern "C" void launch_persistent_kernel(cudaStream_t default_stream) {
+     if (err != cudaSuccess) {
+       printf("CUDA kernel launch error: %s\n", cudaGetErrorString(err));
+     }
+-    printf("Finished Launch Persistent Kernel\n");
++#if MPK_COTENANT_ENABLED
++    cotenant::host_stop();
++#endif
++    printf("Finished Launch Persistent Kernel (%d blocks)\n", num_sms_to_use);
+   }
+ }
+ 
+@@ -2054,6 +2417,11 @@ extern "C" cudaError_t wait_persistent_kernel() {
+       cudaStreamSynchronize(global_runtime_config.worker_stream);
+   cudaError_t scheduler_err =
+       cudaStreamSynchronize(global_runtime_config.scheduler_stream);
++#if MPK_COTENANT_ENABLED && defined(MODE_ONLINE_PINNED)
++  if (getenv("MPK_COTENANT_FUSED") != nullptr) {
++    cotenant::host_stop();
++  }
++#endif
+   return worker_err != cudaSuccess ? worker_err : scheduler_err;
+ }
+ 
+diff --git a/python/mirage/mpk/persistent_kernel.py b/python/mirage/mpk/persistent_kernel.py
+index 5d76a0de..04ab6a7b 100644
+--- a/python/mirage/mpk/persistent_kernel.py
++++ b/python/mirage/mpk/persistent_kernel.py
+@@ -343,6 +343,10 @@ def get_compile_command(
+         flags = flags + [
+             f"-DMPK_KV_EVENT_LOG={mpk.meta_tensors['kv_event_log'].numel()}"]
+     flags = flags + [f"-DMPK_MAX_SEQ_LENGTH={mpk.max_seq_length}"]
++    cotenant_blocks = int(os.environ.get("MPK_COTENANT_BLOCKS", "0"))
++    if cotenant_blocks > 0:
++        flags = flags + [f"-DMPK_COTENANT_BLOCKS={cotenant_blocks}",
++                         f"-I{os.environ['MPK_COTENANT_DIR']}"]
+ 
+     if _spec_decode_enabled(mpk):
+         flags = flags + ["-DMPK_SPEC_DECODE"]
+diff --git a/python/mirage/utils.py b/python/mirage/utils.py
+index c89b6e7b..b1a7d4fc 100644
+--- a/python/mirage/utils.py
++++ b/python/mirage/utils.py
+@@ -1,3 +1,4 @@
++import os
+ import torch
+ 
+ # This function returns the shared memory limit (in bytes)
+@@ -50,4 +51,9 @@ def get_configurations_from_gpu(rank):
+         worker = 30
+     else:
+         worker = 20
+-    return worker, get_scheduler(sm_cnt, worker)
++    # Megakernel co-tenancy: shrink the LLM's worker pool and leave SMs for
++    # the co-tenant blocks appended to the persistent kernel.
++    worker = int(os.environ.get("MPK_NUM_WORKERS", worker))
++    reserved = int(os.environ.get("MPK_RESERVED_SMS",
++                                  os.environ.get("MPK_COTENANT_BLOCKS", "0")))
++    return worker, get_scheduler(sm_cnt - reserved, worker)
+diff --git a/src/kernel/task_register.cc b/src/kernel/task_register.cc
+index 12469821..d479d282 100644
+--- a/src/kernel/task_register.cc
++++ b/src/kernel/task_register.cc
+@@ -1508,7 +1508,7 @@ int TaskRegister::register_paged_attention_hopper_task(
+   }
+   code.e("kernel::multitoken_paged_attention_hopper_impl<bfloat16, $, $, $, $, "
+          "$, $, $, $, $, "
+-         "$, $, $, $, $>(",
++         "$, $, $, $, $, $>(",
+          num_q_heads_per_kv, /* NUM_QO_HEADS               */
+          1,                  /* NUM_KV_HEADS               */
+          num_kv_heads,       /* NUM_QO_GROUPS              */
+@@ -4559,7 +4559,7 @@ int TaskRegister::register_paged_attention_split_kv_hopper_task(
+   code.inc_indent();
+   code.e("kernel::multitoken_paged_attention_hopper_impl<bfloat16, $, "
+          "$, $, $, $, $, "
+-         "$, $, $, $, $, $, $, $>(",
++         "$, $, $, $, $, $, $, $, $>(",
+          num_q_heads / num_kv_heads, /* NUM_QO_HEADS */
+          1,                          /* NUM_KV_HEADS */
+          num_kv_heads,               /* NUM_QO_GROUPS */
+@@ -4574,6 +4574,7 @@ int TaskRegister::register_paged_attention_split_kv_hopper_task(
+          max_tokens,        /* MAX_TOKENS */
+          "true",            /* PARTITION_KV */
+          num_kv_chunks,     /* NUM_KV_CHUNKS */
++         head_dim,          /* ROTARY_DIM */
+          page_stride_rows /* PAGE_STRIDE_ROWS */);
+   code.e("    task_desc->input_ptrs[1],");
+   code.e("    task_desc->input_ptrs[2],");

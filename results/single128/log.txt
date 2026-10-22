@@ -1,0 +1,108 @@
+Input arguments: Namespace(use_mirage=True, max_num_batched_tokens=8, max_num_batched_requests=1, page_size=4096, kv_budget=None, max_num_pages=16, output_dir=None, trace_name='', profiling=False, spec_decode=None, ngram_size=3, max_seq_length=1024, spec_length=3, model_path=None, model='Qwen/Qwen3-8B', use_cutlass_kernel=True, ignore_eos=True, max_new_tokens=None, temperature=0.0, top_p=1.0, do_sample=False, top_k=0, seed=42, sampling_topk_max=32, save_tokens=None, prompt='Give me a short introduction to large language model.', split_kv_cache=False)
+world_size(1) rank(0)
+KV page: 16.00 MiB x 36 slot(s) = 576.00 MiB per page id  (anchor 'attention')
+  group 0 'attention': block 4096 tokens (4096 entries, tile 64 device default)
+KV pool: 16 pages x 576.00 MiB = 9.00 GiB  (explicit page count; device has 78.66 GiB free of 79.18 GiB)
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:01<00:04,  1.11s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:02<00:02,  1.01it/s]Loading checkpoint shards:  60%|██████    | 3/5 [00:02<00:01,  1.09it/s]Loading checkpoint shards:  80%|████████  | 4/5 [00:03<00:00,  1.22it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.62it/s]Loading checkpoint shards: 100%|██████████| 5/5 [00:03<00:00,  1.32it/s]
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_sparse_mma_warpspecialized.hpp(902): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_warpspecialized.hpp(717): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_array_warpspecialized.hpp(716): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm100_blockscaled_mma_mixed_tma_cpasync_warpspecialized.hpp(554): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB_));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_warpspecialized.hpp(682): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(params.layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../deps/cutlass/include/cutlass/gemm/collective/sm103_blockscaled_mma_array_warpspecialized.hpp(810): warning #2908-D: the implicit by-copy capture of "this" is deprecated
+          Tensor mSFB_tmp = observed_tma_load_sfb_->get_tma_tensor(shape(layout_SFB));
+                            ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(958): warning #177-D: variable "num_schedulers" was declared but never referenced
+    int const num_schedulers =
+              ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(960): warning #177-D: variable "num_schedulers_per_sm" was declared but never referenced
+    int const num_schedulers_per_sm = SCHEDULERS_PER_BLOCK;
+              ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1148): warning #177-D: variable "_trace_t" was declared but never referenced
+        bool _trace_t =
+             ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(984): warning #20054-D: dynamic initialization is not supported for a function-scope static __shared__ variable within a __device__/__global__ function
+    __attribute__((shared)) TaskDesc task_descs[TASK_DESCS_BUFFER_LENGTH];
+                                     ^
+
+/root/mirage/python/mirage/../../include/mirage/persistent_kernel/persistent_kernel.cuh(1668): warning #177-D: variable "expected_num_meta" was declared but never referenced
+    size_t expected_num_meta = 7 + 1 * 4;
+           ^
+
+ptxas info    : (C7510) Potential Performance Loss: wgmma.mma_async instructions are serialized due to wgmma pipeline crossing function boundary at a function call in the function '_Z17persistent_kernelN6mirage7runtime13RuntimeConfigE'
+[MPK INIT] Total tasks: 14380, Total events: 2366
+sm_cnt:  132
+Compiling megakernel using the following command line:
+['/usr/local/cuda/bin/nvcc', '/tmp/tmpyd4xqo44/test.cu', '-O3', '-lineinfo', '-I/opt/conda/include/python3.11', '-I/root/mirage/python/mirage/../../include', '-I/root/mirage/python/mirage/../../include/mirage/persistent_kernel', '-I/root/mirage/python/mirage/../../deps/cutlass/include', '-I/root/mirage/python/mirage/../../deps/cutlass/tools/util/include', '-I/root/mirage/python/mirage/../../deps/json/include', '-DMAX_WORKER_PER_SCHEDULER=9', '-DMIRAGE_USE_CUTLASS_KERNEL=1', '-gencode=arch=compute_90a,code=sm_90a', '-DMPK_ENABLE_TMA', '-DMIRAGE_GRACE_HOPPER', '-DNDEBUG', '-shared', '-std=c++20', '-rdc=false', '-use_fast_math', '-lcuda', '-lcudart', '-lstdc++fs', '-Xcompiler=-fPIC', '--expt-relaxed-constexpr', '-o', '/tmp/tmpyd4xqo44/test.cpython-311-x86_64-linux-gnu.so', '-DMPK_TARGET_CC=90', '-DMIRAGE_BACKEND_USE_CUDA', '-DMODE_OFFLINE', '-DMPK_MAX_NUM_BATCHED_REQUESTS=1', '-DMPK_MAX_NUM_BATCHED_TOKENS=8', '-DMPK_MAX_TOKENS_PER_REQUEST=8', '-DMPK_MAX_NUM_PAGES=16', '-DMPK_NUM_KV_GROUPS=1', '-DMPK_MAX_SEQ_LENGTH=1024']
+Finished megakernel compilation...
+tokens.shape =  torch.Size([1, 1024])
+system
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
+user
+Give me a short introduction to large language model.
+assistant
+<think>
+Okay, the user asked for a short introduction to large language models. Let me start by defining what they are. They're AI models trained on vast amounts of text data, right? I should mention their ability to understand and generate human-like text. Maybe include examples like GPT, BERT, or others. Also, highlight their applications in areas like answering questions, writing, coding, and more. Keep it concise but cover the key points. Make sure to explain why they're called "large" – probably due to their size in terms of parameters and data. Avoid technical jargon so it's accessible. Check if there's anything else important, like their training process or recent advancements. Alright, that should cover it without being too lengthy.
+</think>
+
+Large language models (LLMs) are advanced artificial intelligence systems trained on vast amounts of text data to understand and generate human-like language. They excel at tasks like answering questions, writing stories, coding, and translating languages. Their "large" designation refers to their scale—often containing billions of parameters, enabling them to capture complex patterns in language. LLMs like GPT, BERT, and others have revolutionized natural language processing by providing more context-aware and versatile text generation capabilities. They are widely used in chatbots, content creation, research, and more, adapting to diverse applications through fine-tuning and prompt engineering.
+
+Let me know if you'd like a deeper dive into specific aspects!
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students, professionals, or developers), I can adjust the depth and focus accordingly.
+
+**Note:** The response above is a concise introduction. If you'd like a version tailored to a specific audience (e.g., students
+Prompt length 39, generate length 985, per-token latency: 7.939 ms
+a single persistent kernel
+Finished Launch Persistent Kernel (132 blocks)

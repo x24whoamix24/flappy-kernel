@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: Apache-2.0
+# Checks that need no GPU. Running the kernel needs an H100; see AGENTS.md.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "20"
+      - name: Python compiles
+        run: python -m py_compile $(git ls-files '*.py')
+      - name: Shell scripts parse
+        run: for f in $(git ls-files '*.sh'); do bash -n "$f"; done
+      - name: JavaScript parses
+        run: for f in $(git ls-files '*.mjs'); do node --check "$f"; done
+      - name: CUDA code is clang-formatted
+        run: |
+          pip install clang-format==18.1.8
+          clang-format --dry-run -Werror $(git ls-files 'kernel/*.cu' 'kernel/*.cuh' 'kernel/*.h')
+
+  kernel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container: nvidia/cuda:12.8.1-devel-ubuntu22.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Build the CUDA tools without warnings
+        shell: bash  # runs with -eo pipefail, so a failed make fails the step
+        run: |
+          make -C kernel 2>&1 | tee build.log
+          ! grep -i "warning" build.log
+      - name: Shared-memory layout for server/
+        run: kernel/standalone layout
+
+  patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: The Mirage patch applies to the pinned commit
+        run: |
+          commit=$(grep -o 'MIRAGE_COMMIT=[0-9a-f]\{40\}' deploy/install.sh | cut -d= -f2)
+          grep -q "MIRAGE_COMMIT=$commit" Dockerfile || { echo "Dockerfile and deploy/install.sh pin different Mirage commits"; exit 1; }
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/mirage-project/mirage.git mirage-upstream
+          git -C mirage-upstream checkout --quiet "$commit"
+          git -C mirage-upstream apply --check "$PWD/mirage/megakernel.patch"
