@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
 # Starts the arcade on a GPU node: the Mirage megakernel process (Qwen3-8B,
-# the A2C trainer and the multiplayer game in one launch that serves every
+# the A2C trainer and the arcade's games in one launch that serves every
 # question) and the web server players connect to.
 #
 # Settings (environment):

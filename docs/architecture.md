@@ -4,7 +4,7 @@ Flappy Kernel adds co-tenant work to Mirage's persistent megakernel (MPK). Mirag
 compiles a model into a task graph and runs it in one long-lived kernel: worker
 blocks execute tasks (matmuls, attention, norms), and scheduler warps release tasks
 as their dependencies complete. This project appends extra thread blocks to that
-launch. They run a game, a trainer and a multiplayer arcade, sharing the GPU's SMs,
+launch. They run a game, a trainer and an arcade of up to 7 players, sharing the GPU's SMs,
 memory and lifetime with the LLM.
 
 ## Processes and memory

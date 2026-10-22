@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 apiVersion: v2
 name: flappy-kernel
-description: The Flappy Kernel arcade (an LLM, a trainer and a multiplayer game in one Mirage megakernel launch) on one NVIDIA H100
+description: The Flappy Kernel arcade (race an AI that trains while you play, next to an LLM, in one Mirage megakernel launch) on one NVIDIA H100
 type: application
 version: 0.2.2
 appVersion: "0.2.2"

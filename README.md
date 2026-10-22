@@ -2,14 +2,15 @@
 
 ![The AI flying while the same kernel decodes the LLM and trains it](docs/media/showcase.gif)
 
-Flappy Kernel is a multiplayer arcade game that runs inside one GPU launch, next to an LLM
-and a training job. One [Mirage](https://github.com/mirage-project/mirage) megakernel on
-one H100 runs all three at once:
+Flappy Kernel is an arcade game where you race an AI, running inside one GPU launch next
+to an LLM and the AI's own training. Up to 7 people can play at once, each in their own
+race, while everyone else watches. One [Mirage](https://github.com/mirage-project/mirage)
+megakernel on one H100 runs all three:
 
 - **LLM:** Qwen3-8B answers players' questions.
-- **Training:** an AI learns the game, playing 7,936 copies of it at once.
-- **Game:** every player's game runs at 30 Hz against that AI, and each frame is drawn
-  on the GPU.
+- **Training:** the AI learns the game, playing 7,936 copies of it at once.
+- **Game:** players race the AI as it trains, flying its newest policy. Every game runs
+  at 30 Hz, and each frame is drawn on the GPU.
 
 Players connect from a browser; their flaps reach the GPU at the next tick.
 
@@ -110,7 +111,7 @@ Game, network and training constants are compile-time values in `kernel/core/con
 | `kernel/cotenant.cuh` | Entry point Mirage includes: dispatches each co-tenant block to its job |
 | `kernel/core/` | Compile-time settings, shared state, device helpers |
 | `kernel/training/` | Policy network, hand-written A2C gradient, learner blocks |
-| `kernel/game/` | Physics, rendering, the single-game view and the multiplayer arcade |
+| `kernel/game/` | Physics, rendering, the single-game view and the arcade |
 | `kernel/host/` | Host-side setup, shared memory, CUDA IPC, video recording |
 | `kernel/tools/` | `standalone` and `separate`: the co-tenants without the LLM, for tests and baselines |
 | `mirage/` | `megakernel.patch` for Mirage @ `ca58a02`, and what it changes |
