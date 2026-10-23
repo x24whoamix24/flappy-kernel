@@ -52,7 +52,6 @@ button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-co
 .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--win); box-shadow: 0 0 8px var(--win); }
 .live.off { color: var(--lose); } .live.off i { background: var(--lose); box-shadow: none; }
 h1 { font: 800 clamp(1.5rem, 3.2vw, 2rem)/1.15 var(--body); margin: 2px 0 0; }
-.sub { color: var(--dim); margin: 0; }
 
 /* One cell per thread block of the launch. */
 .blocks { display: grid; grid-template-columns: repeat(66, minmax(0, 1fr)); gap: 2px; max-width: 800px; }
@@ -80,6 +79,7 @@ form { display: flex; gap: 8px; }
 input[type=text] { flex: 1; min-width: 0; font: 16px var(--body); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; }
 input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 1px; }
 .out .note { text-align: left; }
+.note:empty { display: none; }
 .feed { position: relative; display: grid; gap: 16px; max-height: 420px; overflow-y: auto; font: 14px/1.45 var(--mono); }
 .msg { display: grid; gap: 4px; }
 .msg .who { font-size: 0.78rem; color: var(--dim); }
@@ -107,7 +107,6 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
   /* The game and its buttons fit on one screen. */
   canvas { width: min(100%, calc((100dvh - 170px) * 0.5625)); }
   .controls button { flex: 1 1 0; padding-inline: 6px; font-size: 0.82rem; white-space: nowrap; }
-  .sub { display: none; }
   .blocks { grid-template-columns: repeat(33, minmax(0, 1fr)); }
   .cols { gap: 10px; }
   .col { padding-left: 8px; border-left-width: 4px; }
@@ -127,22 +126,21 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
       <button id="play-watch" type="button" aria-pressed="true">Watch the AI</button>
     </div>
     <p class="result" id="result" role="status"></p>
-    <p class="hint">Tap or press Space to flap · <span id="me"></span></p>
+    <p class="hint">Tap or Space to flap · <span id="me"></span></p>
   </div>
 
   <div class="side">
     <div>
       <span class="live off" id="live"><i></i><span id="live-text">connecting to the GPU…</span></span>
       <h1>One CUDA kernel. One H100.</h1>
-      <p class="sub">Mirage MPK megakernel running LLM inference, RL training and a game at the same time</p>
     </div>
 
     <div class="blocks" id="blocks" role="img" aria-label="The launch's 132 thread blocks: 96 LLM decode workers, 4 schedulers, 31 RL trainers, 1 game and renderer"></div>
     <div class="legend">
-      <span><i class="r-llm"></i>96 LLM decode workers</span>
+      <span><i class="r-llm"></i>96 LLM</span>
       <span><i class="r-sched"></i>4 schedulers</span>
-      <span><i class="r-train"></i>31 RL trainers</span>
-      <span><i class="r-game"></i>1 game + renderer</span>
+      <span><i class="r-train"></i>31 trainers</span>
+      <span><i class="r-game"></i>1 game</span>
     </div>
 
     <div class="cols">
@@ -160,18 +158,17 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
       <div class="col game">
         <h2>GAME<small>Flappy Kernel</small></h2>
         <div class="stat"><span class="v" id="g-fps">–</span><span class="l">frames / s</span></div>
-        <div class="stat"><span class="v" id="g-players">–</span><span class="l">players</span></div>
         <div class="stat"><span class="v" id="g-best">–</span><span class="l">best human score</span></div>
       </div>
     </div>
 
     <div class="out">
-      <h2>LLM output <span>(decoded inside the same kernel)</span></h2>
+      <h2>LLM output</h2>
       <form id="ask">
         <input type="text" id="question" maxlength="280" placeholder="Ask Qwen3-8B something" aria-label="Question for the LLM">
         <button type="submit" id="ask-btn">Send</button>
       </form>
-      <p class="note" id="ask-note">Answered one at a time, in the order asked.</p>
+      <p class="note" id="ask-note"></p>
       <div class="feed" id="feed"></div>
     </div>
   </div>
@@ -284,8 +281,8 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
       live.appendChild(richText(llm.text || "…"));
       feed.appendChild(live);
     }
-    (history || []).slice().reverse().forEach(function (h) {
-      if (llm && h.launch === llm.launch) return;
+    var older = (history || []).slice().reverse().filter(function (h) { return !(llm && h.launch === llm.launch); });
+    older.slice(0, llm ? 1 : 2).forEach(function (h) {
       var m = el("div", "msg");
       m.appendChild(el("span", "who", "Answered · " + fmt(h.tok_s) + " tok/s"));
       m.appendChild(el("span", "q", h.prompt));
@@ -302,7 +299,6 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
     $("g-gen").textContent = fmt(s.llm && s.llm.tokens);
     $("g-upd").textContent = fmt(st.upd_s);
     $("g-sim").textContent = st.upd_s == null ? "–" : compact.format(st.upd_s * STEPS_PER_UPDATE);
-    $("g-players").textContent = fmt(st.players);
     $("g-best").textContent = fmt(st.best_human);
     $("g-total").textContent = fmtCompact(st.episodes);
     $("g-total").title = fmt(st.episodes);
@@ -317,11 +313,11 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
     if (!slot || !me) {
       phase = 0;
       if (current !== "watch" && !joining) setMode("watch");
-      $("me").textContent = "watching the AI";
+      $("me").textContent = "watching";
       return;
     }
     phase = me.phase;
-    $("me").textContent = "playing in GPU game slot " + slot;
+    $("me").textContent = "slot " + slot;
     if (me.phase === 1) setResult("Flap to start.", "");
     else if (me.phase === 2) setResult(me.mode === 1 ? "Score " + me.you_score : "You " + me.you_score + " · AI " + me.ai_score, "");
     else if (me.phase === 3) {

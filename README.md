@@ -1,8 +1,7 @@
 <h1 align="center">Flappy Kernel</h1>
 
 <p align="center">
-  <a href="docs/media/race.mp4"><img src="docs/media/race.gif" alt="LLM + RL training + game: one kernel, one H100. A question is sent to the LLM, then a player (yellow) races the AI (blue, labelled AI) while the answer streams in and the live numbers of all three jobs update" width="900"></a>
-  <br><sub>Click for the full-quality video (15 s).</sub>
+  <a href="docs/media/race.mp4"><img src="docs/media/race.gif" alt="One kernel launch on one H100: a question is sent to the LLM, then a player (yellow) races the AI (blue, labelled AI) while the answer streams in and the live numbers of the LLM, the trainer and the game update" width="900"></a>
 </p>
 
 Flappy Kernel is an arcade game: fly a bird through the pipes and race an AI bird that is
