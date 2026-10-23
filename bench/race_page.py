@@ -43,6 +43,8 @@ QUESTION = ("Write a short story, about 400 words, about a little bird racing an
 url, out, play_s = sys.argv[1], sys.argv[2], float(sys.argv[3])
 with sync_playwright() as p:
     b = p.chromium.launch()
+    t_rec = time.time()  # the video starts about now; stage times below are relative to it
+    stages = {}
     ctx = b.new_context(viewport={"width": 1280, "height": 720},
                         record_video_dir=out, record_video_size={"width": 1280, "height": 720})
     page = ctx.new_page()
@@ -52,11 +54,13 @@ with sync_playwright() as p:
     page.keyboard.type(QUESTION, delay=35)            # typed, as a player would
     page.wait_for_timeout(400)
     page.click("#ask-btn")
+    stages["send"] = time.time() - t_rec
     page.wait_for_timeout(800)
     page.click("#play-race")
     page.wait_for_timeout(1200)
     page.locator("canvas").focus()
     page.keyboard.press("Space")                       # start the race
+    stages["race"] = time.time() - t_rec
     t0, last, prev, gap = time.time(), 0.0, None, None
     while time.time() - t0 < play_s:
         s = page.evaluate(READ)
@@ -80,6 +84,8 @@ with sync_playwright() as p:
         if "again" in page.locator("#result").text_content():
             break
         page.wait_for_timeout(100)
+    stages["result"] = time.time() - t_rec
+    print("stages:", {k: round(v, 1) for k, v in stages.items()})
     print("result:", page.locator("#result").text_content())
     page.wait_for_timeout(3500)
     ctx.close(); b.close()

@@ -74,13 +74,13 @@ while (Date.now() - t0 < 15000) {
   await a.keyboard.press("Space");
   await a.waitForTimeout(380);
   const r = await text(a, "#result");
-  if (r.startsWith("You ")) sawPlaying = true;
-  if (/beat the AI|outlasted you/.test(r)) break;
+  if (/^You \d+ · AI \d+/.test(r)) sawPlaying = true;
+  if (/beat the AI|outlasted you|You crashed|A tie/.test(r)) break;
 }
 await a.locator("canvas").screenshot({ path: shots + "2-race.png" });
 const res = await text(a, "#result");
 check("flaps reach the GPU game", sawPlaying);
-check("race ends with a result", /beat the AI|outlasted you/.test(res), res);
+check("race ends with a result", /beat the AI|outlasted you|You crashed|A tie/.test(res), res);
 
 // 4. A second page from the same address asks for a game. The server allows one
 // game per address (every page of this test shares one): the game moves to the

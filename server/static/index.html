@@ -41,7 +41,10 @@ button:hover { border-color: var(--dim); }
 button:focus-visible { outline: 2px solid var(--llm); outline-offset: 2px; }
 button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .hint, .note { font: 12px/1.4 var(--mono); color: var(--dim); text-align: center; margin: 0; }
-.result { font-weight: 700; min-height: 1.5em; margin: 0; text-align: center; }
+/* The game's column is as wide as the game: its messages wrap inside it (width 0,
+   min-width 100%) instead of stretching the column and squeezing the panel. */
+.screen .result, .screen .hint { width: 0; min-width: 100%; }
+.result { font-weight: 700; min-height: 2.8em; margin: 0; text-align: center; }
 .result.win { color: var(--win); } .result.lose { color: var(--lose); }
 
 .side { display: grid; gap: 18px; min-width: 0; align-content: start; }
@@ -92,7 +95,7 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
 @media (min-width: 861px) {
   html, body { height: 100%; overflow: hidden; }
   .cab { height: 100dvh; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
-  canvas { width: min(450px, calc((100dvh - 150px) * 0.5625)); }
+  canvas { width: min(450px, calc((100dvh - 175px) * 0.5625)); }
   .screen { align-content: start; }
   .side { grid-template-rows: auto auto auto auto minmax(0, 1fr); min-height: 0; }
   .out { grid-template-rows: auto auto auto minmax(0, 1fr); min-height: 0; }
@@ -323,8 +326,12 @@ input[type=text]:focus-visible { outline: 2px solid var(--llm); outline-offset: 
     else if (me.phase === 2) setResult(me.mode === 1 ? "Score " + me.you_score : "You " + me.you_score + " · AI " + me.ai_score, "");
     else if (me.phase === 3) {
       if (me.mode === 0) {
-        var won = !me.ai_alive && me.you_score >= me.ai_score;
-        setResult((won ? "You beat the AI, " : "The AI outlasted you, ") + me.you_score + " to " + me.ai_score + ". Flap to race again.", won ? "win" : "lose");
+        var you = me.you_score, ai = me.ai_score;
+        // The race ends when you crash; the AI may still be flying.
+        if (me.ai_alive) setResult("You crashed at " + you + ". The AI was still flying at " + ai + ". Flap to race again.", "lose");
+        else if (you > ai) setResult("You beat the AI, " + you + " to " + ai + ". Flap to race again.", "win");
+        else if (you === ai) setResult("A tie at " + you + ": you both crashed. Flap to race again.", "");
+        else setResult("The AI outlasted you, " + ai + " to " + you + ". Flap to race again.", "lose");
       } else setResult("Game over at " + me.you_score + ". Flap to play again.", "");
     }
   }
